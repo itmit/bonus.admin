@@ -21,6 +21,7 @@ class CreateClientsTable extends Migration
             $table->string('login');
             $table->string('name');
             $table->enum('type', ['businessman', 'customer']);
+            $table->boolean('active')->default(0);
             $table->text('device_token')->nullable();
             $table->string('password');
             $table->softDeletes();
