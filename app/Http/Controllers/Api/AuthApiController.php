@@ -97,12 +97,24 @@ class AuthApiController extends ApiBaseController
             $client = Client::where('phone', request('login'))->first();
         }
 
-        if(!Client::where('phone', '=', $request->phone)->exists())
+        if(!$client)
         {
             return response()->json(['error'=>'Такого пользователя не существует'], 401); 
-        }       
+        }
 
-        $client = Client::where('phone', '=', $request->phone)->first();
+        if($client->type == 'businessman')
+        {
+            $isInfoFilled = ClientBusinessman::where('client_id', '=', $client->id)->exists();
+        }
+        if($client->type == 'customer')
+        {
+            $isInfoFilled = ClientCustomer::where('client_id', '=', $client->id)->exists();
+        }
+
+        if(!$isInfoFilled)
+        {
+            return response()->json(['error'=>'Данные о пользователе не заполнены'], 401); 
+        }
 
         if(Hash::check($request->password, $client->password))
         {
