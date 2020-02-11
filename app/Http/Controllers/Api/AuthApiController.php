@@ -67,7 +67,7 @@ class AuthApiController extends ApiBaseController
 
             });
         } catch (\Throwable $th) {
-            return response()->json(['error'=>'Не удалось зарегистрировать клиента'], 401);      
+            return response()->json(['error'=>$th], 401);      
         }
     }
 
@@ -152,6 +152,6 @@ class AuthApiController extends ApiBaseController
     
     public function fillInfo(Request $request)
     {
-        
+
     }
 }
