@@ -64,7 +64,7 @@ class AuthApiController extends ApiBaseController
                     ]);
                 };
     
-                return $this->sendResponse([$this->user->uuid],'Зарегистрировано');
+                return $this->sendResponse(['uuid' => $this->user->uuid],'Зарегистрировано');
 
             });
         } catch (\Throwable $th) {
