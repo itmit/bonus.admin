@@ -63,13 +63,13 @@ class AuthApiController extends ApiBaseController
                         'device_token' => $request->device_token
                     ]);
                 };
-    
-                return $this->sendResponse(['uuid' => $this->user->uuid],'Зарегистрировано');
 
             });
         } catch (\Throwable $th) {
             return response()->json(['error'=>$th], 401);      
         }
+
+        return $this->sendResponse(['uuid' => $this->user->uuid],'Зарегистрировано');
     }
 
     /** 
