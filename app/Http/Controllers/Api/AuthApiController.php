@@ -187,7 +187,7 @@ class AuthApiController extends ApiBaseController
         // try {
             if(!$request->photo)
             {
-                $path = $file->store('public/avatars');
+                $path = $request->photo->store('public/avatars');
                 $url = Storage::url($path);
             }
             else $url = NULL;
