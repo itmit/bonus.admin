@@ -192,7 +192,7 @@ class AuthApiController extends ApiBaseController
             }
             else $url = NULL;
 
-            DB::transaction(function () use ($request, $client, $path) {
+            DB::transaction(function () use ($request, $client, $url) {
                 if($client->type == 'businessman')
                 {
                     ClientBusinessman::create([
