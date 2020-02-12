@@ -113,7 +113,7 @@ class AuthApiController extends ApiBaseController
 
         if(!$isInfoFilled)
         {
-            return response()->json(['error'=>'Данные о пользователе не заполнены'], 401); 
+            return $this->sendResponse([$client->uuid], 'Данные о пользователе не заполнены', false);
         }
 
         if(Hash::check($request->password, $client->password))
@@ -165,6 +165,35 @@ class AuthApiController extends ApiBaseController
     
     public function fillInfo(Request $request)
     {
+        $validator = Validator::make($request->all(), [ 
+            'uuid' => 'required|uuid',
+            'country' => 'required|string',
+            'address' => 'required|min:6',
+            'worktime' => 'required|string',
+            'contact' => 'required|string',
+            'phone' => 'required|string',
+            'description' => 'required|string',
+            'photo' => 'required|string',
+        ]);
+
+        try {
+            $phone = request('phone');
+
+            $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+            $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
+            $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
+
+            $request->phone = $phone;
+        } catch (\Throwable $th) {
+            $validator->after(function ($validator) {
+                $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
+            });
+        }
+        
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 401);            
+        }
+
 
     }
 }

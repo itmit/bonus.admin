@@ -19,10 +19,10 @@ abstract class ApiBaseController extends Controller
      * @param string $message
      * @return JsonResponseAlias
      */
-    public function sendResponse(array $result, string $message): JsonResponseAlias
+    public function sendResponse(array $result, string $message, $success = true): JsonResponseAlias
     {
         return response()->json([
-            'success' => true,
+            'success' => $success,
             'data' => $result,
             'message' => $message,
         ], 200);
