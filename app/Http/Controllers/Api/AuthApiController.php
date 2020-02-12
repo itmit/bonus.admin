@@ -94,7 +94,20 @@ class AuthApiController extends ApiBaseController
         }
         if (!filter_var(request('login'), FILTER_VALIDATE_EMAIL)) // если ЛОГИН НЕ ПОЧТА
         {
-            $client = Client::where('phone', request('login'))->first();
+            try {
+                $phone = request('phone');
+    
+                $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+                $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
+                $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
+    
+                $request->phone = $phone;
+            } catch (\Throwable $th) {
+                $validator->after(function ($validator) {
+                    $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
+                });
+            }
+            $client = Client::where('phone', $request->phone)->first();
         }
 
         if(!$client)
@@ -116,7 +129,120 @@ class AuthApiController extends ApiBaseController
             return $this->sendResponse([$client->uuid], 'Данные о пользователе не заполнены', false);
         }
 
-        if(Hash::check($request->password, $client->password))
+        try {
+            self::auth($client, $request->password);
+        } catch (\Throwable $th) {
+            return response()->json(['error'=>$th], 401); 
+        }
+        return response()->json(['error'=>'произошла ошибка'], 500); 
+    }
+
+    public function logout(Request $request)
+    {
+        $isUser = $request->client()->token()->revoke();
+        if($isUser){
+            $success['message'] = "Successfully logged out.";
+            return $this->sendResponse($success);
+        }
+        else{
+            $error = "Something went wrong.";
+            return $this->sendResponse($error);
+        }
+    }
+    
+    public function fillInfo(Request $request)
+    {
+        $validator = Validator::make($request->all(), [ 
+            'uuid' => 'required|uuid',
+            'country' => 'required|string',
+            'address' => 'required|min:6',
+            'worktime' => 'required|string',
+            'contact' => 'required|string',
+            'phone' => 'required|string',
+            'description' => 'string',
+            'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
+            'password' => 'required|min:6'
+        ]);
+
+        try {
+            $phone = request('phone');
+
+            $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+            $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
+            $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
+
+            $request->phone = $phone;
+        } catch (\Throwable $th) {
+            $validator->after(function ($validator) {
+                $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
+            });
+        }
+        
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 401);            
+        }
+
+        $client = Client::where('uuid', $request->uuid)->first();
+
+        try {
+            if(!$request->photo)
+            {
+                $path = Storage::putFile('public/avatars', $request->file('photo'));
+            }
+            else $path = NULL;
+
+            DB::transaction(function () use ($request, $client, $path) {
+                if($client->type == 'businessman')
+                {
+                    ClientBusinessman::create([
+                        'client_id' => $client->id,
+                        'country' => $request->country,
+                        'address' => $request->address,
+                        'work_time' => $request->worktime,
+                        'contact' => $request->contact,
+                        'description' => $request->description,
+                        'photo' => $path,
+                    ]);
+
+                    Client::where('uuid', $request->uuid)->update([
+                        'phone' => $request->phone,
+                        'active' => 1,
+                    ]);
+                };
+
+                if($client->type == 'customer')
+                {
+                    ClientCustomer::create([
+                        'uuid' => Str::uuid(),
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'login' => $request->login,
+                        'type' => $request->type,
+                        'password' => Hash::make($request->password),
+                    ]);
+
+                    Client::where('uuid', $request->uuid)->update([
+                        'phone' => $request->phone,
+                        'active' => 1,
+                    ]);
+                }
+            });
+        } catch (\Throwable $th) {
+            return response()->json(['error'=>$th], 401);      
+        }
+
+        try {
+            self::auth($client, $request->password);
+        } catch (\Throwable $th) {
+            return response()->json(['error'=>$th], 401); 
+        }
+        return response()->json(['error'=>'произошла ошибка'], 500); 
+
+    }
+
+    private function auth($client, $password)
+    {
+        if(Hash::check($password, $client->password))
         {
             Auth::login($client);
             if (Auth::check()) {
@@ -147,53 +273,5 @@ class AuthApiController extends ApiBaseController
         {
             return response()->json(['error'=>'Неверный пароль'], 401); 
         }
-        return response()->json(['error'=>'Авторизация не удалась'], 401); 
-    }
-
-    public function logout(Request $request)
-    {
-        $isUser = $request->client()->token()->revoke();
-        if($isUser){
-            $success['message'] = "Successfully logged out.";
-            return $this->sendResponse($success);
-        }
-        else{
-            $error = "Something went wrong.";
-            return $this->sendResponse($error);
-        }
-    }
-    
-    public function fillInfo(Request $request)
-    {
-        $validator = Validator::make($request->all(), [ 
-            'uuid' => 'required|uuid',
-            'country' => 'required|string',
-            'address' => 'required|min:6',
-            'worktime' => 'required|string',
-            'contact' => 'required|string',
-            'phone' => 'required|string',
-            'description' => 'required|string',
-            'photo' => 'required|string',
-        ]);
-
-        try {
-            $phone = request('phone');
-
-            $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
-            $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
-            $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
-
-            $request->phone = $phone;
-        } catch (\Throwable $th) {
-            $validator->after(function ($validator) {
-                $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
-            });
-        }
-        
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 401);            
-        }
-
-
     }
 }
