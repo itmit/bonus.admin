@@ -187,9 +187,10 @@ class AuthApiController extends ApiBaseController
         // try {
             if(!$request->photo)
             {
-                $path = Storage::putFile('public/avatars', $request->file('photo'));
+                $path = $file->store('public/avatars');
+                $url = Storage::url($path);
             }
-            else $path = NULL;
+            else $url = NULL;
 
             DB::transaction(function () use ($request, $client, $path) {
                 if($client->type == 'businessman')
@@ -201,7 +202,7 @@ class AuthApiController extends ApiBaseController
                         'work_time' => $request->worktime,
                         'contact' => $request->contact,
                         'description' => $request->description,
-                        'photo' => $path,
+                        'photo' => $url,
                     ]);
 
                     Client::where('uuid', $request->uuid)->update([

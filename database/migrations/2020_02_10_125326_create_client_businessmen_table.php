@@ -17,6 +17,7 @@ class CreateClientBusinessmenTable extends Migration
             $table->bigIncrements('id');
             $table->bigInteger('client_id');
             $table->string('country');
+            $table->string('city');
             $table->text('address');
             $table->string('work_time');
             $table->string('contact');
