@@ -252,13 +252,6 @@ class AuthApiController extends ApiBaseController
                 $token->expires_at = Carbon::now()->addWeeks(1);
                 $token->save();
 
-                if($request->device_token)
-                {
-                    Client::where('id', '=', $client->id)->update([
-                        'device_token' => $request->device_token
-                    ]);
-                }
-
                 return $this->sendResponse([
                     'access_token' => $tokenResult->accessToken,
                     'client' => $client,
