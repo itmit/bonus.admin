@@ -232,11 +232,11 @@ class AuthApiController extends ApiBaseController
         //     return response()->json(['error'=>$th], 500);      
         // }
 
-        try {
+        // try {
             self::auth($client, $request->password);
-        } catch (\Throwable $th) {
+        // } catch (\Throwable $th) {
             return response()->json(['error'=>$th], 401); 
-        }
+        // }
         return response()->json(['error'=>'произошла ошибка'], 500); 
 
     }

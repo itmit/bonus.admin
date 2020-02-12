@@ -21,9 +21,8 @@ class CreateClientBusinessmenTable extends Migration
             $table->text('address');
             $table->string('work_time');
             $table->string('contact');
-            $table->string('phone');
-            $table->text('description');
-            $table->text('photo');
+            $table->text('description')->nullable();
+            $table->text('photo')->nullable();
             $table->timestamps();
         });
     }
