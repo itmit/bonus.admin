@@ -164,7 +164,7 @@ class AuthApiController extends ApiBaseController
             'password' => 'required|min:6'
         ]);
 
-        // try {
+        try {
             $phone = request('phone');
 
             $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
@@ -172,12 +172,11 @@ class AuthApiController extends ApiBaseController
             $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
 
             $request->phone = $phone;
-        // } catch (\Throwable $th) {
-        //     return response()->json(['error'=>$th], 500);    
-        //     $validator->after(function ($validator) {
-        //         $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
-        //     });
-        // }
+        } catch (\Throwable $th) {
+            $validator->after(function ($validator) {
+                $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
+            });
+        }
         
         if ($validator->fails()) { 
             return response()->json(['errors'=>$validator->errors()], 401);            
@@ -229,7 +228,7 @@ class AuthApiController extends ApiBaseController
                 }
             });
         } catch (\Throwable $th) {
-            return response()->json(['error'=>$th], 401);      
+            return response()->json(['error'=>$th], 500);      
         }
 
         try {
