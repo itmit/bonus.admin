@@ -184,7 +184,7 @@ class AuthApiController extends ApiBaseController
 
         $client = Client::where('uuid', $request->uuid)->first();
 
-        try {
+        // try {
             if(!$request->photo)
             {
                 $path = Storage::putFile('public/avatars', $request->file('photo'));
@@ -227,9 +227,9 @@ class AuthApiController extends ApiBaseController
                     ]);
                 }
             });
-        } catch (\Throwable $th) {
-            return response()->json(['error'=>$th], 500);      
-        }
+        // } catch (\Throwable $th) {
+        //     return response()->json(['error'=>$th], 500);      
+        // }
 
         try {
             self::auth($client, $request->password);
