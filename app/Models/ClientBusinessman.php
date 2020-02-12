@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ClientBusinessman extends Model
 {
-    protected $table = 'client_businessman';
+    protected $table = 'client_businessmen';
 
     /**
      * @var array
