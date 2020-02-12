@@ -173,7 +173,7 @@ class AuthApiController extends ApiBaseController
 
             $request->phone = $phone;
         } catch (\Throwable $th) {
-            return response()->json($th, 500);           
+            return response()->json(['error'=>$th], 500);    
             $validator->after(function ($validator) {
                 $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
             });
