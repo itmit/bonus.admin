@@ -185,7 +185,7 @@ class AuthApiController extends ApiBaseController
         $client = Client::where('uuid', $request->uuid)->first();
 
         // try {
-            if(!$request->photo)
+            if($request->photo != NULL)
             {
                 $path = $request->photo->store('public/avatars');
                 $url = Storage::url($path);
