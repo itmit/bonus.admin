@@ -233,9 +233,9 @@ class AuthApiController extends ApiBaseController
         // }
 
         // try {
-            self::auth($client, $request->password);
+            return self::auth($client, $request->password);
         // } catch (\Throwable $th) {
-            return response()->json(['error'=>$th], 401); 
+            // return response()->json(['error'=>$th], 401); 
         // }
         return response()->json(['error'=>'произошла ошибка'], 500); 
 
