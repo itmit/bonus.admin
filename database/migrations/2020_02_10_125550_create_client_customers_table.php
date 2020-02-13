@@ -18,7 +18,7 @@ class CreateClientCustomersTable extends Migration
             $table->bigInteger('client_id')->unsigned();
             $table->string('country');
             $table->string('city');
-            $table->enumm('sex', ['male', 'female']);
+            $table->enum('sex', ['male', 'female']);
             $table->date('birthday');
             $table->string('car')->nullable();
             $table->text('photo')->nullable();
