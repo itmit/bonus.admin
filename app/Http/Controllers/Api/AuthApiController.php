@@ -94,19 +94,16 @@ class AuthApiController extends ApiBaseController
         }
         if (!filter_var(request('login'), FILTER_VALIDATE_EMAIL)) // если ЛОГИН НЕ ПОЧТА
         {
-            try {
-                $phone = request('phone');
-    
-                $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
-                $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
-                $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
-    
-                $request->phone = $phone;
-            } catch (\Throwable $th) {
-                $validator->after(function ($validator) {
-                    $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
-                });
-            }
+            $phone = request('phone');
+
+            $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+            $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
+            $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
+
+            $request->phone = $phone;
+
+            return $request->phone;
+
             $client = Client::where('phone', $request->phone)->first();
         }
 
@@ -180,7 +177,7 @@ class AuthApiController extends ApiBaseController
 
         $client = Client::where('uuid', $request->uuid)->first();
 
-        if(!$client) return response()->json(['error'=>'Пользователь не найден'], 401); 
+        if(!$client) return response()->json(['error'=>'Пользователь не найден'], 400); 
 
         if(ClientBusinessman::where('client_id', $client->id)->exists() || ClientCustomer::where('client_id', $client->id)->exists()) return response()->json(['error'=>'Данные о пользователе уже заполнены'], 500); 
 
