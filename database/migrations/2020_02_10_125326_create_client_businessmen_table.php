@@ -15,7 +15,7 @@ class CreateClientBusinessmenTable extends Migration
     {
         Schema::create('client_businessmen', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('client_id');
+            $table->bigInteger('client_id')->unsigned();
             $table->string('country');
             $table->string('city');
             $table->text('address');
@@ -24,6 +24,8 @@ class CreateClientBusinessmenTable extends Migration
             $table->text('description')->nullable();
             $table->text('photo')->nullable();
             $table->timestamps();
+
+            $table->foreign('client_id')->references('id')->on('clients');
         });
     }
 

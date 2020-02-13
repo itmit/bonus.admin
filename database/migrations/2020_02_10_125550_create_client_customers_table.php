@@ -15,7 +15,16 @@ class CreateClientCustomersTable extends Migration
     {
         Schema::create('client_customers', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('client_id')->unsigned();
+            $table->string('country');
+            $table->string('city');
+            $table->enumm('sex', ['male', 'female']);
+            $table->date('birthday');
+            $table->string('car')->nullable();
+            $table->text('photo')->nullable();
             $table->timestamps();
+
+            $table->foreign('client_id')->references('id')->on('clients');
         });
     }
 

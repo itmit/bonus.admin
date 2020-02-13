@@ -129,12 +129,7 @@ class AuthApiController extends ApiBaseController
             return $this->sendResponse([$client->uuid], 'Данные о пользователе не заполнены', false);
         }
 
-        try {
-            self::auth($client, $request->password);
-        } catch (\Throwable $th) {
-            return response()->json(['error'=>$th], 401); 
-        }
-        return response()->json(['error'=>'произошла ошибка'], 500); 
+        return self::auth($client, $request->password);
     }
 
     public function logout(Request $request)
@@ -155,90 +150,120 @@ class AuthApiController extends ApiBaseController
         $validator = Validator::make($request->all(), [ 
             'uuid' => 'required|uuid',
             'country' => 'required|string',
-            'address' => 'required|min:6',
-            'worktime' => 'required|string',
-            'contact' => 'required|string',
+            'city' => 'required|string',
+            'sex' => [
+                'required',
+                Rule::in(['male', 'female']),
+            ],
+            'birthday' => 'date',
+            'car' => 'string',
+            'address' => 'min:6',
+            'worktime' => 'string',
+            'contact' => 'string',
             'phone' => 'required|string',
             'description' => 'string',
             'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
             'password' => 'required|min:6'
         ]);
 
-        try {
-            $phone = request('phone');
-
-            $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
-            $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
-            $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
-
-            $request->phone = $phone;
-        } catch (\Throwable $th) {
-            $validator->after(function ($validator) {
-                $validator->errors()->add('number', 'Не удалось преобразовать номер телефона');
-            });
-        }
-        
         if ($validator->fails()) { 
             return response()->json(['errors'=>$validator->errors()], 401);            
         }
 
+        $phone = request('phone');
+
+        $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+        $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
+        $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
+
+        $request->phone = $phone;
+
         $client = Client::where('uuid', $request->uuid)->first();
 
-        // try {
-            if($request->photo != NULL)
+        if(ClientBusinessman::where('client_id', $client->id)->exists() || ClientCustomer::where('client_id', $client->id)->exists()) return response()->json(['error'=>'Данные о пользователе уже заполнены'], 500); 
+
+        if($request->photo != NULL)
+        {
+            $path = $request->photo->store('public/avatars');
+            $url = Storage::url($path);
+        }
+        else $url = NULL;
+
+        DB::transaction(function () use ($request, $client, $url) {
+            if($client->type == 'businessman')
             {
-                $path = $request->photo->store('public/avatars');
-                $url = Storage::url($path);
-            }
-            else $url = NULL;
-
-            DB::transaction(function () use ($request, $client, $url) {
-                if($client->type == 'businessman')
-                {
-                    ClientBusinessman::create([
-                        'client_id' => $client->id,
-                        'country' => $request->country,
-                        'address' => $request->address,
-                        'work_time' => $request->worktime,
-                        'contact' => $request->contact,
-                        'description' => $request->description,
-                        'photo' => $url,
-                    ]);
-
-                    Client::where('uuid', $request->uuid)->update([
-                        'phone' => $request->phone,
-                        'active' => 1,
-                    ]);
-                };
-
-                if($client->type == 'customer')
-                {
-                    ClientCustomer::create([
-                        'uuid' => Str::uuid(),
-                        'name' => $request->name,
-                        'email' => $request->email,
-                        'login' => $request->login,
-                        'type' => $request->type,
-                        'password' => Hash::make($request->password),
-                    ]);
-
-                    Client::where('uuid', $request->uuid)->update([
-                        'phone' => $request->phone,
-                        'active' => 1,
-                    ]);
+                $validator = Validator::make($request->all(), [ 
+                    'uuid' => 'required|uuid',
+                    'country' => 'required|string',
+                    'city' => 'required|string',
+                    'address' => 'required|min:6',
+                    'worktime' => 'required|string',
+                    'contact' => 'required|string',
+                    'phone' => 'required|string',
+                    'description' => 'string',
+                    'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
+                    'password' => 'required|min:6'
+                ]);
+        
+                if ($validator->fails()) { 
+                    return response()->json(['errors'=>$validator->errors()], 401);            
                 }
-            });
-        // } catch (\Throwable $th) {
-        //     return response()->json(['error'=>$th], 500);      
-        // }
 
-        // try {
-            return self::auth($client, $request->password);
-        // } catch (\Throwable $th) {
-            // return response()->json(['error'=>$th], 401); 
-        // }
-        return response()->json(['error'=>'произошла ошибка'], 500); 
+                ClientBusinessman::create([
+                    'client_id' => $client->id,
+                    'country' => $request->country,
+                    'city' => $request->city,
+                    'address' => $request->address,
+                    'work_time' => $request->worktime,
+                    'contact' => $request->contact,
+                    'description' => $request->description,
+                    'photo' => $url,
+                ]);
 
+                Client::where('uuid', $request->uuid)->update([
+                    'phone' => $request->phone,
+                    'active' => 1,
+                ]);
+            };
+
+            if($client->type == 'customer')
+            {
+                $validator = Validator::make($request->all(), [ 
+                    'uuid' => 'required|uuid',
+                    'country' => 'required|string',
+                    'city' => 'required|string',
+                    'sex' => [
+                        'required',
+                        Rule::in(['male', 'female']),
+                    ],
+                    'birthday' => 'required|date',
+                    'car' => 'required|string',
+                    'phone' => 'required|string',
+                    'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
+                    'password' => 'required|min:6'
+                ]);
+        
+                if ($validator->fails()) { 
+                    return response()->json(['errors'=>$validator->errors()], 401);            
+                }
+
+                ClientBusinessman::create([
+                    'client_id' => $client->id,
+                    'country' => $request->country,
+                    'city' => $request->city,
+                    'sex' => $request->sex,
+                    'birthday' => $request->birthday,
+                    'car' => $request->car,
+                    'photo' => $url,
+                ]);
+
+                Client::where('uuid', $request->uuid)->update([
+                    'phone' => $request->phone,
+                    'active' => 1,
+                ]);
+            }
+        });
+        return self::auth($client, $request->password);
     }
 
     private function auth($client, $password)
