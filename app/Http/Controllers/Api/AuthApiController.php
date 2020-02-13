@@ -94,17 +94,15 @@ class AuthApiController extends ApiBaseController
         }
         if (!filter_var(request('login'), FILTER_VALIDATE_EMAIL)) // если ЛОГИН НЕ ПОЧТА
         {
-            $phone = request('phone');
+            $phone = request('login');
 
             $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
             $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
             $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
 
-            $request->phone = $phone;
+            $request->login = $phone;
 
-            return $request->phone;
-
-            $client = Client::where('phone', $request->phone)->first();
+            $client = Client::where('phone', $request->login)->first();
         }
 
         if(!$client)
