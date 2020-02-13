@@ -180,6 +180,8 @@ class AuthApiController extends ApiBaseController
 
         $client = Client::where('uuid', $request->uuid)->first();
 
+        if(!$client) return response()->json(['error'=>'Пользователь не найден'], 401); 
+
         if(ClientBusinessman::where('client_id', $client->id)->exists() || ClientCustomer::where('client_id', $client->id)->exists()) return response()->json(['error'=>'Данные о пользователе уже заполнены'], 500); 
 
         if($request->photo != NULL)
