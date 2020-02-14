@@ -121,7 +121,7 @@ class AuthApiController extends ApiBaseController
 
         if(!$isInfoFilled)
         {
-            return $this->sendResponse([$client->uuid], 'Данные о пользователе не заполнены', false);
+            return $this->sendResponse([$client->uuid, $client->type], 'Данные о пользователе не заполнены', false);
         }
 
         return self::auth($client, $request->password);
@@ -186,6 +186,9 @@ class AuthApiController extends ApiBaseController
         }
         else $url = NULL;
 
+        return $this->sendResponse($client->toArray(),
+            'Authorization is successful');
+
         DB::transaction(function () use ($request, $client, $url) {
             if($client->type == 'businessman')
             {
@@ -234,8 +237,8 @@ class AuthApiController extends ApiBaseController
                         Rule::in(['male', 'female']),
                     ],
                     'birthday' => 'required|date',
-                    'car' => 'required|string',
-                    'phone' => 'required|string',
+                    'car' => 'string',
+                    'phone' => 'string',
                     'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
                     'password' => 'required|min:6'
                 ]);
@@ -244,7 +247,7 @@ class AuthApiController extends ApiBaseController
                     return response()->json(['errors'=>$validator->errors()], 401);            
                 }
 
-                ClientBusinessman::create([
+                ClientCustomer::create([
                     'client_id' => $client->id,
                     'country' => $request->country,
                     'city' => $request->city,
