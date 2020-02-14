@@ -169,6 +169,7 @@ class AuthApiController extends ApiBaseController
 
         $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
         $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
+        if(!$phoneNumberObject->isPossibleNumber()) return response()->json(['error'=>'Некорректный номер'], 500); 
         $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
 
         $request->phone = $phone;
@@ -176,6 +177,8 @@ class AuthApiController extends ApiBaseController
         $client = Client::where('uuid', $request->uuid)->first();
 
         if(!$client) return response()->json(['error'=>'Пользователь не найден'], 400); 
+
+        if(Hash::check($request->password, $client->password)) return response()->json(['error'=>'Неверный пароль'], 401); 
 
         if(ClientBusinessman::where('client_id', $client->id)->exists() || ClientCustomer::where('client_id', $client->id)->exists()) return response()->json(['error'=>'Данные о пользователе уже заполнены'], 500); 
 
