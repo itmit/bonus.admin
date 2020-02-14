@@ -169,7 +169,7 @@ class AuthApiController extends ApiBaseController
 
         $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
         $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
-        if(!$phoneNumberObject->isPossibleNumber()) return response()->json(['error'=>'Некорректный номер'], 500); 
+        if(!$phoneNumberUtil->isPossibleNumber($phoneNumberObject)) return response()->json(['error'=>'Некорректный номер'], 500); 
         $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
 
         $request->phone = $phone;
