@@ -204,7 +204,7 @@ class AuthApiController extends ApiBaseController
                     ]);
             
                     if ($validator->fails()) { 
-                        return response()->json(['errors'=>$validator->errors()], 401);            
+                        return response()->json(['errors'=>$validator->errors()], 500);            
                     }
     
                     ClientBusinessman::create([
@@ -242,7 +242,7 @@ class AuthApiController extends ApiBaseController
                     ]);
             
                     if ($validator->fails()) { 
-                        return response()->json(['errors'=>$validator->errors()], 401);            
+                        return response()->json(['errors'=>$validator->errors()], 500);            
                     }
     
                     ClientCustomer::create([
