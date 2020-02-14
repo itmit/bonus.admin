@@ -121,7 +121,7 @@ class AuthApiController extends ApiBaseController
 
         if(!$isInfoFilled)
         {
-            return $this->sendResponse([$client->uuid, $client->type], 'Данные о пользователе не заполнены', false);
+            return $this->sendResponse(['uuid' => $client->uuid, 'type' => $client->type], 'Данные о пользователе не заполнены', false);
         }
 
         return self::auth($client, $request->password);
