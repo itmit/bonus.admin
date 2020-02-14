@@ -178,7 +178,7 @@ class AuthApiController extends ApiBaseController
 
         if(!$client) return response()->json(['error'=>'Пользователь не найден'], 400); 
 
-        if(Hash::check($request->password, $client->password)) return response()->json(['error'=>'Неверный пароль'], 401); 
+        if(!Hash::check($request->password, $client->password)) return response()->json(['error'=>'Неверный пароль'], 401); 
 
         if(ClientBusinessman::where('client_id', $client->id)->exists() || ClientCustomer::where('client_id', $client->id)->exists()) return response()->json(['error'=>'Данные о пользователе уже заполнены'], 500); 
 
