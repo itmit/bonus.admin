@@ -186,27 +186,52 @@ class AuthApiController extends ApiBaseController
         }
         else $url = NULL;
 
+        if($client->type == 'businessman')
+        {
+            $validator = Validator::make($request->all(), [ 
+                'uuid' => 'required|uuid',
+                'country' => 'required|string',
+                'city' => 'required|string',
+                'address' => 'required|min:6',
+                'worktime' => 'required|string',
+                'contact' => 'required|string',
+                'phone' => 'required|string',
+                'description' => 'string',
+                'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
+                'password' => 'required|min:6'
+            ]);
+    
+            if ($validator->fails()) { 
+                return response()->json(['errors'=>$validator->errors()], 500);            
+            }
+        };
+    
+        if($client->type == 'customer')
+        {
+            $validator = Validator::make($request->all(), [ 
+                'uuid' => 'required|uuid',
+                'country' => 'required|string',
+                'city' => 'required|string',
+                'sex' => [
+                    'required',
+                    Rule::in(['male', 'female']),
+                ],
+                'birthday' => 'required|date',
+                'car' => 'string',
+                'phone' => 'string',
+                'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
+                'password' => 'required|min:6'
+            ]);
+    
+            if ($validator->fails()) { 
+                return response()->json(['errors'=>$validator->errors()], 500);            
+            }
+        }
+
         try {
             DB::transaction(function () use ($request, $client, $url) {
                 if($client->type == 'businessman')
                 {
-                    $validator = Validator::make($request->all(), [ 
-                        'uuid' => 'required|uuid',
-                        'country' => 'required|string',
-                        'city' => 'required|string',
-                        'address' => 'required|min:6',
-                        'worktime' => 'required|string',
-                        'contact' => 'required|string',
-                        'phone' => 'required|string',
-                        'description' => 'string',
-                        'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
-                        'password' => 'required|min:6'
-                    ]);
-            
-                    if ($validator->fails()) { 
-                        return response()->json(['errors'=>$validator->errors()], 500);            
-                    }
-    
                     ClientBusinessman::create([
                         'client_id' => $client->id,
                         'country' => $request->country,
@@ -226,25 +251,6 @@ class AuthApiController extends ApiBaseController
     
                 if($client->type == 'customer')
                 {
-                    $validator = Validator::make($request->all(), [ 
-                        'uuid' => 'required|uuid',
-                        'country' => 'required|string',
-                        'city' => 'required|string',
-                        'sex' => [
-                            'required',
-                            Rule::in(['male', 'female']),
-                        ],
-                        'birthday' => 'required|date',
-                        'car' => 'string',
-                        'phone' => 'string',
-                        'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
-                        'password' => 'required|min:6'
-                    ]);
-            
-                    if ($validator->fails()) { 
-                        return response()->json(['errors'=>$validator->errors()], 500);            
-                    }
-    
                     ClientCustomer::create([
                         'client_id' => $client->id,
                         'country' => $request->country,
@@ -262,7 +268,7 @@ class AuthApiController extends ApiBaseController
                 }
             });
         } catch (\Throwable $th) {
-            return response()->json(['errors'=>$th], 401);   
+            return response()->json(['errors'=>$th], 500);   
         }
         
         return self::auth($client, $request->password);
