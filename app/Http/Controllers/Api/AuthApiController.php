@@ -186,81 +186,86 @@ class AuthApiController extends ApiBaseController
         }
         else $url = NULL;
 
-        DB::transaction(function () use ($request, $client, $url) {
-            return $this->sendResponse($client->toArray(), 'Authorization is successful');
-            if($client->type == 'businessman')
-            {
-                $validator = Validator::make($request->all(), [ 
-                    'uuid' => 'required|uuid',
-                    'country' => 'required|string',
-                    'city' => 'required|string',
-                    'address' => 'required|min:6',
-                    'worktime' => 'required|string',
-                    'contact' => 'required|string',
-                    'phone' => 'required|string',
-                    'description' => 'string',
-                    'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
-                    'password' => 'required|min:6'
-                ]);
-        
-                if ($validator->fails()) { 
-                    return response()->json(['errors'=>$validator->errors()], 401);            
+        try {
+            DB::transaction(function () use ($request, $client, $url) {
+                return $this->sendResponse($client->toArray(), 'Authorization is successful');
+                if($client->type == 'businessman')
+                {
+                    $validator = Validator::make($request->all(), [ 
+                        'uuid' => 'required|uuid',
+                        'country' => 'required|string',
+                        'city' => 'required|string',
+                        'address' => 'required|min:6',
+                        'worktime' => 'required|string',
+                        'contact' => 'required|string',
+                        'phone' => 'required|string',
+                        'description' => 'string',
+                        'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
+                        'password' => 'required|min:6'
+                    ]);
+            
+                    if ($validator->fails()) { 
+                        return response()->json(['errors'=>$validator->errors()], 401);            
+                    }
+    
+                    ClientBusinessman::create([
+                        'client_id' => $client->id,
+                        'country' => $request->country,
+                        'city' => $request->city,
+                        'address' => $request->address,
+                        'work_time' => $request->worktime,
+                        'contact' => $request->contact,
+                        'description' => $request->description,
+                        'photo' => $url,
+                    ]);
+    
+                    Client::where('uuid', $request->uuid)->update([
+                        'phone' => $request->phone,
+                        'active' => 1,
+                    ]);
+                };
+    
+                if($client->type == 'customer')
+                {
+                    $validator = Validator::make($request->all(), [ 
+                        'uuid' => 'required|uuid',
+                        'country' => 'required|string',
+                        'city' => 'required|string',
+                        'sex' => [
+                            'required',
+                            Rule::in(['male', 'female']),
+                        ],
+                        'birthday' => 'required|date',
+                        'car' => 'string',
+                        'phone' => 'string',
+                        'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
+                        'password' => 'required|min:6'
+                    ]);
+            
+                    if ($validator->fails()) { 
+                        return response()->json(['errors'=>$validator->errors()], 401);            
+                    }
+    
+                    ClientCustomer::create([
+                        'client_id' => $client->id,
+                        'country' => $request->country,
+                        'city' => $request->city,
+                        'sex' => $request->sex,
+                        'birthday' => $request->birthday,
+                        'car' => $request->car,
+                        'photo' => $url,
+                    ]);
+    
+                    Client::where('uuid', $request->uuid)->update([
+                        'phone' => $request->phone,
+                        'active' => 1,
+                    ]);
                 }
-
-                ClientBusinessman::create([
-                    'client_id' => $client->id,
-                    'country' => $request->country,
-                    'city' => $request->city,
-                    'address' => $request->address,
-                    'work_time' => $request->worktime,
-                    'contact' => $request->contact,
-                    'description' => $request->description,
-                    'photo' => $url,
-                ]);
-
-                Client::where('uuid', $request->uuid)->update([
-                    'phone' => $request->phone,
-                    'active' => 1,
-                ]);
-            };
-
-            if($client->type == 'customer')
-            {
-                $validator = Validator::make($request->all(), [ 
-                    'uuid' => 'required|uuid',
-                    'country' => 'required|string',
-                    'city' => 'required|string',
-                    'sex' => [
-                        'required',
-                        Rule::in(['male', 'female']),
-                    ],
-                    'birthday' => 'required|date',
-                    'car' => 'string',
-                    'phone' => 'string',
-                    'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
-                    'password' => 'required|min:6'
-                ]);
+            });
+        } catch (\Throwable $th) {
+            return response()->json(['errors'=>$th], 401);   
+        }
         
-                if ($validator->fails()) { 
-                    return response()->json(['errors'=>$validator->errors()], 401);            
-                }
-
-                ClientCustomer::create([
-                    'client_id' => $client->id,
-                    'country' => $request->country,
-                    'city' => $request->city,
-                    'sex' => $request->sex,
-                    'birthday' => $request->birthday,
-                    'car' => $request->car,
-                    'photo' => $url,
-                ]);
-
-                Client::where('uuid', $request->uuid)->update([
-                    'phone' => $request->phone,
-                    'active' => 1,
-                ]);
-            }
-        });
         return self::auth($client, $request->password);
     }
 
