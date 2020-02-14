@@ -187,6 +187,7 @@ class AuthApiController extends ApiBaseController
         else $url = NULL;
 
         DB::transaction(function () use ($request, $client, $url) {
+            return $this->sendResponse($client->toArray(), 'Authorization is successful');
             if($client->type == 'businessman')
             {
                 $validator = Validator::make($request->all(), [ 
@@ -225,9 +226,6 @@ class AuthApiController extends ApiBaseController
 
             if($client->type == 'customer')
             {
-                return $this->sendResponse($client->toArray(),
-            'Authorization is successful');
-
                 $validator = Validator::make($request->all(), [ 
                     'uuid' => 'required|uuid',
                     'country' => 'required|string',
