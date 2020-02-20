@@ -37,7 +37,7 @@ class ServiceApiController extends ApiBaseController
         return $this->sendResponse($result,'');
     }
 
-    public function getCustomerByUUID()
+    public function getCustomerByUUID(Request $request)
     {
         $validator = Validator::make($request->all(), [ 
             'uuid' => 'required|uuid|exists:client_customers',
