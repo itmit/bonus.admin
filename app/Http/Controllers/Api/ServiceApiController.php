@@ -9,6 +9,7 @@ use App\Models\ServiceItem;
 use App\Models\ClientCustomer;
 use App\Models\ClientBusinessman;
 use App\Models\ClientBalance;
+use App\Models\Client;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
