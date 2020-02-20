@@ -99,7 +99,7 @@ class ServiceApiController extends ApiBaseController
         ]);
 
         if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 500);            
+            return response()->json(['errors'=>$validator->errors()], 402);            
         }
 
         $serviceItem = ServiceItem::where('uuid', $request->uuid)->first()->id;
@@ -108,8 +108,8 @@ class ServiceApiController extends ApiBaseController
 
         if($request->writeoff_method == 'points') $request->value = $request->value * 100;
 
-        try {
-            DB::transaction(function () use ($request, $serviceItem) {
+        // try {
+        //     DB::transaction(function () use ($request, $serviceItem) {
                 BusinessmanService::create([
                     'uuid' => Str::uuid(),
                     'businessmen_id' => auth('api')->user()->id,
@@ -118,10 +118,10 @@ class ServiceApiController extends ApiBaseController
                     'writeoff_method' => $request->writeoff_method,
                     'value' => $request->value,
                 ]);
-            });
-        } catch (\Throwable $th) {
-            return response()->json(['error'=>$th], 401);      
-        }
+        //     });
+        // } catch (\Throwable $th) {
+        //     return response()->json(['error'=>$th], 500);      
+        // }
 
         return $this->sendResponse([],'');
 

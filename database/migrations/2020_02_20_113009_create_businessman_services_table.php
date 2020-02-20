@@ -21,7 +21,8 @@ class CreateBusinessmanServicesTable extends Migration
             $table->bigInteger('service_item_id')->unsigned();
             $table->enum('accrual_method', ['points', 'percent']); // способ начисления
             $table->enum('writeoff_method', ['points', 'percent']); // способ списания
-            $table->integer('value')->default(0);
+            $table->integer('accrual_value')->default(0);
+            $table->integer('writeoff_value')->default(0);
             $table->timestamps();
             $table->softDeletes();
 
