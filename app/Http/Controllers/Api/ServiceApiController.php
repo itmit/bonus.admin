@@ -12,6 +12,7 @@ use App\Models\ClientBalance;
 use App\Models\Client;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class ServiceApiController extends ApiBaseController
 {
@@ -76,16 +77,6 @@ class ServiceApiController extends ApiBaseController
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -93,7 +84,23 @@ class ServiceApiController extends ApiBaseController
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [ 
+            'uuid' => 'required|uuid|exists:service_items',
+            'accrual_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // предприниматель, покупатель
+            ],
+            'writeoff_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // предприниматель, покупатель
+            ],
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 500);            
+        }
+
+
     }
 
     /**

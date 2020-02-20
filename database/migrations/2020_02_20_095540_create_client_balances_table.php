@@ -22,8 +22,8 @@ class CreateClientBalancesTable extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            $table->foreign('customer_id')->references('id')->on('service_types');
-            $table->foreign('businessmen_id')->references('id')->on('service_types');
+            $table->foreign('customer_id')->references('id')->on('clients');
+            $table->foreign('businessmen_id')->references('id')->on('clients');
         });
     }
 
