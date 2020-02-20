@@ -20,6 +20,6 @@ Route::post('fillInfo', 'Api\AuthApiController@fillInfo');
 
 Route::group(['middleware' => 'auth:api'], function(){
 
-    // Route::get('events/getEventsByDate/{date}', 'Api\EventApiController@getEventsByDate');
+    Route::resource('service', 'Api\ServiceApiController');
     
 });
