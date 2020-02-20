@@ -59,7 +59,8 @@ class ServiceApiController extends ApiBaseController
             $balance = ClientBalance::create([
                 'uuid' => Str::uuid(),
                 'customer_id' => $client->id,
-                'businessmen_id' => $businessmenId
+                'businessmen_id' => $businessmenId,
+                'amount' => 0
             ]);
         }
 
