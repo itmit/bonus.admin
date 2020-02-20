@@ -13,6 +13,7 @@ use App\Models\Client;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ServiceApiController extends ApiBaseController
 {
@@ -94,12 +95,35 @@ class ServiceApiController extends ApiBaseController
                 'required',
                 Rule::in(['points', 'percent']), // предприниматель, покупатель
             ],
+            'value' => 'required|integer'
         ]);
 
         if ($validator->fails()) { 
             return response()->json(['errors'=>$validator->errors()], 500);            
         }
 
+        $serviceItem = ServiceItem::where('uuid', $request->uuid)->first()->id;
+
+        if($request->accrual_method == 'points') $request->value = $request->value * 100;
+
+        if($request->writeoff_method == 'points') $request->value = $request->value * 100;
+
+        try {
+            DB::transaction(function () use ($request, $serviceItem) {
+                BusinessmanService::create([
+                    'uuid' => Str::uuid(),
+                    'businessmen_id' => auth('api')->user()->id,
+                    'service_item_id' => $serviceItem,
+                    'accrual_method' => $request->accrual_method,
+                    'writeoff_method' => $request->writeoff_method,
+                    'value' => $request->value,
+                ]);
+            });
+        } catch (\Throwable $th) {
+            return response()->json(['error'=>$th], 401);      
+        }
+
+        return $this->sendResponse([],'');
 
     }
 
