@@ -16,8 +16,20 @@ class ServiceApiController extends ApiBaseController
      */
     public function index()
     {
-        $types = ServiceType::orderBy('name')->get('id', 'uuid', 'name')->toArray();
-        return $this->sendResponse($types,'');
+        $result = [];
+        $types = ServiceType::orderBy('name')->get(['id', 'uuid', 'name']);
+        foreach ($types as $type) {
+            $items = ServiceItem::select('uuid', 'name')->where('service_type_id', $type->id)->get();
+            $itemsResult = [];
+            foreach ($items as $item) {
+                $itemsResult[] = $item;
+            }
+            $result[] = [
+                'type' => $type,
+                'items' => $itemsResult
+            ];
+        }
+        return $this->sendResponse($result,'');
     }
 
     /**
