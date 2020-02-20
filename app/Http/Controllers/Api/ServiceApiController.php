@@ -16,7 +16,8 @@ class ServiceApiController extends ApiBaseController
      */
     public function index()
     {
-        //
+        $types = ServiceType::orderBy('name')->get('id', 'uuid', 'name')->toArray();
+        return $this->sendResponse($types,'');
     }
 
     /**

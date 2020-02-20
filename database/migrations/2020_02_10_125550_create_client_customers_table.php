@@ -23,6 +23,7 @@ class CreateClientCustomersTable extends Migration
             $table->string('car')->nullable();
             $table->text('photo')->nullable();
             $table->timestamps();
+            $table->softDeletes();
 
             $table->foreign('client_id')->references('id')->on('clients');
         });

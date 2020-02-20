@@ -24,8 +24,8 @@ class CreateClientsTable extends Migration
             $table->boolean('active')->default(0);
             $table->text('device_token')->nullable();
             $table->string('password');
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
