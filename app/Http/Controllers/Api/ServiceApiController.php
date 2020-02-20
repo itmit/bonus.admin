@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceType;
 use App\Models\ServiceItem;
+use App\Models\ClientCustomer;
+use App\Models\ClientBusinessman;
+use App\Models\ClientBalance;
+use Illuminate\Support\Str;
 
 class ServiceApiController extends ApiBaseController
 {
@@ -29,6 +33,42 @@ class ServiceApiController extends ApiBaseController
                 'items' => $itemsResult
             ];
         }
+        return $this->sendResponse($result,'');
+    }
+
+    public function getCustomerByUUID()
+    {
+        $validator = Validator::make($request->all(), [ 
+            'uuid' => 'required|uuid|exists:client_customers',
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 500);            
+        }
+
+        $businessmenId = auth('api')->user()->id;
+
+        $client = Client::where('uuid', $request->uuid)->first();
+        $clientCustomer = ClientCustomer::where('id', $client->id)->first();
+
+        $balance = ClientBalance::where('customer_id', $client->id)->where('businessmen_id', $businessmenId)->first();
+        if($balance == NULL)
+        {
+            $balance = ClientBalance::create([
+                'uuid' => Str::uuid(),
+                'customer_id' => $client->id,
+                'businessmen_id' => $businessmenId
+            ]);
+        }
+
+        $result = [
+            'client' => [
+                'name' => $client->name,
+                'photo' => $client->photo,
+            ],
+            'balance' => $balance->amount
+        ];
+
         return $this->sendResponse($result,'');
     }
 
