@@ -96,7 +96,8 @@ class ServiceApiController extends ApiBaseController
                 'required',
                 Rule::in(['points', 'percent']), // предприниматель, покупатель
             ],
-            'value' => 'required|integer'
+            'accrual_value' => 'required|integer',
+            'writeoff_value' => 'required|integer'
         ]);
 
         if ($validator->fails()) { 
@@ -105,9 +106,9 @@ class ServiceApiController extends ApiBaseController
 
         $serviceItem = ServiceItem::where('uuid', $request->uuid)->first()->id;
 
-        if($request->accrual_method == 'points') $request->value = $request->value * 100;
+        if($request->accrual_method == 'points') $request->accrual_value = $request->accrual_value * 100;
 
-        if($request->writeoff_method == 'points') $request->value = $request->value * 100;
+        if($request->writeoff_method == 'points') $request->writeoff_value = $request->writeoff_value * 100;
 
         try {
             DB::transaction(function () use ($request, $serviceItem) {
@@ -117,7 +118,8 @@ class ServiceApiController extends ApiBaseController
                     'service_item_id' => $serviceItem,
                     'accrual_method' => $request->accrual_method,
                     'writeoff_method' => $request->writeoff_method,
-                    'value' => $request->value,
+                    'accrual_value' => $request->accrual_value,
+                    'writeoff_value' => $request->writeoff_value,
                 ]);
             });
         } catch (\Throwable $th) {
