@@ -125,7 +125,7 @@ class BusinessmanServiceApiController extends ApiBaseController
     public function update(Request $request, $uuid)
     {
         $validator = Validator::make($request->all(), [ 
-            'item_uuid' => 'required|uuid|exists:service_items',
+            'item_uuid' => 'required|uuid|exists:service_items,uuid',
             'accrual_method' => [
                 'required',
                 Rule::in(['points', 'percent']), // предприниматель, покупатель
