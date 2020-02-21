@@ -11,6 +11,7 @@ use App\Models\ClientBusinessman;
 use App\Models\ClientBalance;
 use App\Models\Client;
 use App\Models\BusinessmanService;
+use App\Models\CustomerService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -86,7 +87,43 @@ class ServiceApiController extends ApiBaseController
      */
     public function store(Request $request)
     {
-        
+        $validator = Validator::make($request->all(), [ 
+            'client_uuid' => 'required|uuid|exists:clients,uuid',
+            'service_uuid' => 'required|uuid|exists:businessman_services,uuid',
+            'price' => 'required|integer|min:1|max:999999',
+            'accrual_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // баллы, проценты
+            ],
+            'writeoff_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // баллы, проценты
+            ],
+            'accrual_value' => 'required|integer',
+            'writeoff_value' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        // try {
+        //     DB::transaction(function () use ($request, $serviceItem) {
+        //         CustomerService::create([
+        //             'uuid' => Str::uuid(),
+        //             'businessmen_id' => auth('api')->user()->id,
+        //             'service_item_id' => $serviceItem,
+        //             'accrual_method' => $request->accrual_method,
+        //             'writeoff_method' => $request->writeoff_method,
+        //             'accrual_value' => $request->accrual_value,
+        //             'writeoff_value' => $request->writeoff_value,
+        //         ]);
+        //     });
+        // } catch (\Throwable $th) {
+        //     return response()->json(['error'=>$th], 500);      
+        // }
+
+        return $this->sendResponse([],'');
 
     }
 
