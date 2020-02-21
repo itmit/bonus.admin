@@ -122,9 +122,36 @@ class BusinessmanServiceApiController extends ApiBaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $uuid)
     {
-        //
+        $validator = Validator::make($request->all(), [ 
+            'item_uuid' => 'required|uuid|exists:service_items',
+            'accrual_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // предприниматель, покупатель
+            ],
+            'writeoff_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // предприниматель, покупатель
+            ],
+            'accrual_value' => 'required|integer',
+            'writeoff_value' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        $item = ServiceItem::where('uuid', $request->item_uuid)->first()->id;
+        BusinessmanService::where('uuid', $post)->update([
+            'businessmen_id' => $item,
+            'accrual_method' => $request->accrual_method,
+            'writeoff_method' => $request->writeoff_method,
+            'accrual_value' => $request->accrual_value,
+            'writeoff_value' => $request->writeoff_value,
+        ]);
+
+        return $this->sendResponse([],'Updated');
     }
 
     /**
@@ -133,8 +160,9 @@ class BusinessmanServiceApiController extends ApiBaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($uuid)
     {
-        //
+        BusinessmanService::where('uuid', $uuid)->delete();
+        return $this->sendResponse([],'Updated');
     }
 }
