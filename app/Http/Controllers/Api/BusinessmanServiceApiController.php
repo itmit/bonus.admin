@@ -143,7 +143,7 @@ class BusinessmanServiceApiController extends ApiBaseController
         }
 
         $item = ServiceItem::where('uuid', $request->item_uuid)->first()->id;
-        BusinessmanService::where('uuid', $post)->update([
+        BusinessmanService::where('uuid', $uuid)->update([
             'businessmen_id' => $item,
             'accrual_method' => $request->accrual_method,
             'writeoff_method' => $request->writeoff_method,
