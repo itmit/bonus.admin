@@ -101,7 +101,7 @@ class ServiceApiController extends ApiBaseController
         ]);
 
         if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 402);            
+            return response()->json(['errors'=>$validator->errors()], 400);            
         }
 
         $serviceItem = ServiceItem::where('uuid', $request->uuid)->first()->id;

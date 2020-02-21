@@ -22,5 +22,7 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     Route::resource('service', 'Api\ServiceApiController');
     Route::post('service/getCustomerByUUID', 'Api\ServiceApiController@getCustomerByUUID');
+
+    Route::resource('businessmanservice', 'Api\BusinessmanServiceApiController');
     
 });

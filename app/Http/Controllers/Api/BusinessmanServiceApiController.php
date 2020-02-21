@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\BusinessmanService;
 
-class UserServiceApiController extends Controller
+class BusinessmanServiceApiController extends ApiBaseController
 {
     /**
      * Display a listing of the resource.
@@ -14,7 +15,11 @@ class UserServiceApiController extends Controller
      */
     public function index()
     {
-        //
+        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.id', '=', 'service_items.service_item_id')
+        ->where('businessman_services.businessmen_id', auth('api')->user()->id)
+        ->select('businessman_services.uuid', 'service_items.name')
+        ->get()
+        ->toArray(),'Список созданных услуг');
     }
 
     /**
