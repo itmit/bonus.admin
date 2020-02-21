@@ -4,7 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\ServiceType;
+use App\Models\ServiceItem;
+use App\Models\ClientCustomer;
+use App\Models\ClientBusinessman;
+use App\Models\ClientBalance;
+use App\Models\Client;
 use App\Models\BusinessmanService;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class BusinessmanServiceApiController extends ApiBaseController
 {
@@ -23,16 +33,6 @@ class BusinessmanServiceApiController extends ApiBaseController
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -40,7 +40,47 @@ class BusinessmanServiceApiController extends ApiBaseController
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [ 
+            'uuid' => 'required|uuid|exists:service_items',
+            'accrual_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // предприниматель, покупатель
+            ],
+            'writeoff_method' => [
+                'required',
+                Rule::in(['points', 'percent']), // предприниматель, покупатель
+            ],
+            'accrual_value' => 'required|integer',
+            'writeoff_value' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        $serviceItem = ServiceItem::where('uuid', $request->uuid)->first()->id;
+
+        if($request->accrual_method == 'points') $request->accrual_value = $request->accrual_value * 100;
+
+        if($request->writeoff_method == 'points') $request->writeoff_value = $request->writeoff_value * 100;
+
+        try {
+            DB::transaction(function () use ($request, $serviceItem) {
+                BusinessmanService::create([
+                    'uuid' => Str::uuid(),
+                    'businessmen_id' => auth('api')->user()->id,
+                    'service_item_id' => $serviceItem,
+                    'accrual_method' => $request->accrual_method,
+                    'writeoff_method' => $request->writeoff_method,
+                    'accrual_value' => $request->accrual_value,
+                    'writeoff_value' => $request->writeoff_value,
+                ]);
+            });
+        } catch (\Throwable $th) {
+            return response()->json(['error'=>$th], 500);      
+        }
+
+        return $this->sendResponse([],'');
     }
 
     /**
@@ -49,9 +89,14 @@ class BusinessmanServiceApiController extends ApiBaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($uuid)
     {
-        //
+        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
+        ->where('businessman_services.businessmen_id', auth('api')->user()->id)
+        ->where('businessman_services.uuid', $uuid)
+        ->select('businessman_services.uuid', 'service_items.name', 'businessman_services.accrual_method', 'businessman_services.accrual_value', 'businessman_services.writeoff_value', 'businessman_services.writeoff_value')
+        ->get()
+        ->toArray(),'Список созданных услуг');
     }
 
     /**
@@ -62,7 +107,12 @@ class BusinessmanServiceApiController extends ApiBaseController
      */
     public function edit($id)
     {
-        //
+        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
+        ->where('businessman_services.businessmen_id', auth('api')->user()->id)
+        ->where('businessman_services.uuid', $uuid)
+        ->select('businessman_services.uuid', 'service_items.name', 'businessman_services.accrual_method', 'businessman_services.accrual_value', 'businessman_services.writeoff_value', 'businessman_services.writeoff_value')
+        ->get()
+        ->toArray(),'Список созданных услуг');
     }
 
     /**

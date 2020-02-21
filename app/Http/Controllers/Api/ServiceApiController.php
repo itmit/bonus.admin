@@ -86,47 +86,7 @@ class ServiceApiController extends ApiBaseController
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
-            'uuid' => 'required|uuid|exists:service_items',
-            'accrual_method' => [
-                'required',
-                Rule::in(['points', 'percent']), // предприниматель, покупатель
-            ],
-            'writeoff_method' => [
-                'required',
-                Rule::in(['points', 'percent']), // предприниматель, покупатель
-            ],
-            'accrual_value' => 'required|integer',
-            'writeoff_value' => 'required|integer'
-        ]);
-
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 400);            
-        }
-
-        $serviceItem = ServiceItem::where('uuid', $request->uuid)->first()->id;
-
-        if($request->accrual_method == 'points') $request->accrual_value = $request->accrual_value * 100;
-
-        if($request->writeoff_method == 'points') $request->writeoff_value = $request->writeoff_value * 100;
-
-        try {
-            DB::transaction(function () use ($request, $serviceItem) {
-                BusinessmanService::create([
-                    'uuid' => Str::uuid(),
-                    'businessmen_id' => auth('api')->user()->id,
-                    'service_item_id' => $serviceItem,
-                    'accrual_method' => $request->accrual_method,
-                    'writeoff_method' => $request->writeoff_method,
-                    'accrual_value' => $request->accrual_value,
-                    'writeoff_value' => $request->writeoff_value,
-                ]);
-            });
-        } catch (\Throwable $th) {
-            return response()->json(['error'=>$th], 500);      
-        }
-
-        return $this->sendResponse([],'');
+        
 
     }
 
