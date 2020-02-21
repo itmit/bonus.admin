@@ -17,7 +17,7 @@ class BusinessmanServiceApiController extends ApiBaseController
     {
         return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
         ->where('businessman_services.businessmen_id', auth('api')->user()->id)
-        ->select('businessman_services.uuid', 'service_items.name')
+        ->select('businessman_services.uuid', 'service_items.name', 'businessman_services.accrual_method', 'businessman_services.accrual_value')
         ->get()
         ->toArray(),'Список созданных услуг');
     }
