@@ -15,7 +15,7 @@ class BusinessmanServiceApiController extends ApiBaseController
      */
     public function index()
     {
-        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.id', '=', 'service_items.service_item_id')
+        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
         ->where('businessman_services.businessmen_id', auth('api')->user()->id)
         ->select('businessman_services.uuid', 'service_items.name')
         ->get()
