@@ -108,7 +108,7 @@ class ServiceApiController extends ApiBaseController
         }
 
         $serviceId = BusinessmanService::where('uuid', $request->service_uuid)->first()->id;
-        $customerId = Client::where('uuid', $request->client_id)->first()->id;
+        $customerId = Client::where('uuid', $request->client_uuid)->first()->id;
         $businessmenId = auth('api')->user()->id;
         $balance = ClientBalance::where('customer_id', $customerId)->where('businessmen_id', $businessmenId)->first();
         if($balance == NULL)
