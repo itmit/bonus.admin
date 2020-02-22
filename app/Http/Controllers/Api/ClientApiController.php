@@ -30,7 +30,7 @@ class ClientApiController extends ApiBaseController
         $result = [];
         if($client->type == 'businessman')
         {
-            ClientBusinessman::where('client_id', $client->id)->first();
+            $info = ClientBusinessman::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
                 'email' => $client->email,
@@ -38,18 +38,18 @@ class ClientApiController extends ApiBaseController
                 'login' => $client->login,
                 'name' => $client->name,
                 'type' => $client->type,
-                'country' => $client->country,
-                'city' => $client->city,
-                'address' => $client->address,
-                'work_time' => $client->work_time,
-                'contact' => $client->contact,
-                'description' => $client->description,
-                'photo' => $client->photo,
+                'country' => $info->country,
+                'city' => $info->city,
+                'address' => $info->address,
+                'work_time' => $info->work_time,
+                'contact' => $info->contact,
+                'description' => $info->description,
+                'photo' => $info->photo,
             ];
         }
         if($client->type == 'customer')
         {
-            ClientCustomer::where('client_id', $client->id)->first();
+            $info = ClientCustomer::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
                 'email' => $client->email,
@@ -57,12 +57,12 @@ class ClientApiController extends ApiBaseController
                 'login' => $client->login,
                 'name' => $client->name,
                 'type' => $client->type,
-                'country' => $client->country,
-                'city' => $client->city,
-                'sex' => $client->sex,
-                'birthday' => $client->birthday,
-                'car' => $client->car,
-                'photo' => $client->photo,
+                'country' => $info->country,
+                'city' => $info->city,
+                'sex' => $info->sex,
+                'birthday' => $info->birthday,
+                'car' => $info->car,
+                'photo' => $info->photo,
             ];
         }
         
