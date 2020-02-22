@@ -127,7 +127,7 @@ class ServiceApiController extends ApiBaseController
                     'uuid' => Str::uuid(),
                     'service_id' => $serviceId,
                     'customer_id' => $customerId,
-                    'price' => $serviceItem,
+                    'price' => $request->price,
                     'accrual_method' => $request->accrual_method,
                     'writeoff_method' => $request->writeoff_method,
                     'accrual_value' => $request->accrual_value,
