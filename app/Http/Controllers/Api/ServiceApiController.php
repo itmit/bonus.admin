@@ -136,7 +136,7 @@ class ServiceApiController extends ApiBaseController
 
                 $amount = $balance->amount - $request->writeoff_value;
                 $amount = $amount + $request->accrual_value;
-                $amount = $amount * 100;
+                // $amount = $amount * 100;
 
                 ClientBalance::where('uuid', $balance->uuid)->update([
                     'uuid' => Str::uuid(),
