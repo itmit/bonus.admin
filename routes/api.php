@@ -25,4 +25,5 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     Route::resource('businessmanservice', 'Api\BusinessmanServiceApiController');
     
+    Route::resource('client', 'Api\ClientApiController');
 });
