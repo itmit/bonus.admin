@@ -107,18 +107,41 @@ class ServiceApiController extends ApiBaseController
             return response()->json(['errors'=>$validator->errors()], 400);            
         }
 
+        $serviceId = BusinessmanService::where('uuid', $request->service_uuid)->first()->id;
+        $customerId = Client::where('uuid', $request->client_id)->first()->id;
+        $businessmenId = auth('api')->user()->id;
+        $balance = ClientBalance::where('customer_id', $customerId)->where('businessmen_id', $businessmenId)->first();
+        if($balance == NULL)
+        {
+            return response()->json(['error'=>'Произошла ошибка сервера (клиент не имеет баланса у выбранного предпринимателя)'], 500);
+        }
+
+        $request->accrual_value = $request->accrual_value * 100;
+        $request->writeoff_value = $request->writeoff_value * 100;
+
+        $request->price = $request->price * 100;
+
         // try {
-        //     DB::transaction(function () use ($request, $serviceItem) {
-        //         CustomerService::create([
-        //             'uuid' => Str::uuid(),
-        //             'businessmen_id' => auth('api')->user()->id,
-        //             'service_item_id' => $serviceItem,
-        //             'accrual_method' => $request->accrual_method,
-        //             'writeoff_method' => $request->writeoff_method,
-        //             'accrual_value' => $request->accrual_value,
-        //             'writeoff_value' => $request->writeoff_value,
-        //         ]);
-        //     });
+            DB::transaction(function () use ($request, $serviceId, $customerId, $balance) {
+                CustomerService::create([
+                    'uuid' => Str::uuid(),
+                    'service_id' => $serviceId,
+                    'customer_id' => $customerId,
+                    'price' => $serviceItem,
+                    'accrual_method' => $request->accrual_method,
+                    'writeoff_method' => $request->writeoff_method,
+                    'accrual_value' => $request->accrual_value,
+                    'writeoff_value' => $request->writeoff_value,
+                ]);
+
+                $amount = $balance->amount - $request->writeoff_value;
+                $amount = $amount + $request->accrual_value;
+
+                ClientBalance::where('uuid', $balance->uuid)->update([
+                    'uuid' => Str::uuid(),
+                    'amount' => $amount
+                ]);
+            });
         // } catch (\Throwable $th) {
         //     return response()->json(['error'=>$th], 500);      
         // }
