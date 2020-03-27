@@ -116,11 +116,6 @@ class ServiceApiController extends ApiBaseController
             return response()->json(['error'=>'Произошла ошибка сервера (клиент не имеет баланса у выбранного предпринимателя)'], 500);
         }
 
-        $request->accrual_value = $request->accrual_value * 100;
-        $request->writeoff_value = $request->writeoff_value * 100;
-
-        $request->price = $request->price * 100;
-
         // try {
             DB::transaction(function () use ($request, $serviceId, $customerId, $balance) {
                 CustomerService::create([
@@ -136,8 +131,7 @@ class ServiceApiController extends ApiBaseController
 
                 $amount = $balance->amount - $request->writeoff_value;
                 $amount = $amount + $request->accrual_value;
-                // $amount = $amount * 100;
-
+                
                 ClientBalance::where('uuid', $balance->uuid)->update([
                     'uuid' => Str::uuid(),
                     'amount' => $amount
