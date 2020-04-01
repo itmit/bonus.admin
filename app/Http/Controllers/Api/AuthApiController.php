@@ -146,11 +146,6 @@ class AuthApiController extends ApiBaseController
             'uuid' => 'required|uuid',
             'country' => 'required|string',
             'city' => 'required|string',
-            'sex' => [
-                'string',
-                Rule::in(['male', 'female']),
-            ],
-            'birthday' => 'date',
             'car' => 'string',
             'address' => 'min:6',
             'worktime' => 'string',
