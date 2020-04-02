@@ -48,7 +48,7 @@ class BusinessmanStockApiController extends ApiBaseController
             'city' => 'required|string',
             'name' => 'required|string',
             'description' => 'required',
-            'photo' => 'required',
+            // 'photo' => 'required',
             'expires_at' => 'required|date',
             'sub_only' => [
                 'required',
@@ -62,10 +62,15 @@ class BusinessmanStockApiController extends ApiBaseController
 
         $serviceItem = ServiceItem::where('uuid', $request->service_uuid)->first()->id;
 
-
+        if($request->photo != NULL)
+        {
+            $path = $request->photo->store('public/stock');
+            $url = Storage::url($path);
+        }
+        else $url = NULL;
 
         try {
-            DB::transaction(function () use ($request, $serviceItem) {
+            DB::transaction(function () use ($request, $serviceItem, $url) {
                 Stock::create([
                     'uuid' => Str::uuid(),
                     'client_id' => auth('api')->user()->id,
@@ -74,7 +79,7 @@ class BusinessmanStockApiController extends ApiBaseController
                     'city' => $request->city,
                     'name' => $request->name,
                     'description' => $request->description,
-                    'photo' => $request->photo,
+                    'photo' => $url,
                     'expires_at' => $request->expires_at,
                     'sub_only' => $request->sub_only,
                 ]);
