@@ -43,7 +43,7 @@ class BusinessmanStockApiController extends ApiBaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [ 
-            'service_uuid' => 'required|uuid|exists:service_items',
+            'service_uuid' => 'required|uuid|exists:service_items,uuid',
             'country' => 'required|string',
             'city' => 'required|string',
             'name' => 'required|string',
