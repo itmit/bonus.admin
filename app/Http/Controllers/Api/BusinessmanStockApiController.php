@@ -148,6 +148,14 @@ class BusinessmanStockApiController extends ApiBaseController
         }
 
         $item = ServiceItem::where('uuid', $request->item_uuid)->first()->id;
+
+        if($request->photo != NULL)
+        {
+            $path = $request->photo->store('public/stock');
+            $url = Storage::url($path);
+        }
+        else $url = NULL;
+        
         Stock::where('uuid', $uuid)->update([
             'uuid' => Str::uuid(),
             'client_id' => auth('api')->user()->id,
@@ -172,7 +180,6 @@ class BusinessmanStockApiController extends ApiBaseController
      */
     public function destroy($uuid)
     {
-        BusinessmanService::where('uuid', $uuid)->delete();
-        return $this->sendResponse([],'Updated');
+        
     }
 }
