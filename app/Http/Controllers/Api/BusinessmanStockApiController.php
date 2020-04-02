@@ -99,12 +99,7 @@ class BusinessmanStockApiController extends ApiBaseController
      */
     public function show($uuid)
     {
-        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
-        ->where('businessman_services.businessmen_id', auth('api')->user()->id)
-        ->where('businessman_services.uuid', $uuid)
-        ->select('businessman_services.uuid', 'service_items.name', 'businessman_services.accrual_method', 'businessman_services.accrual_value', 'businessman_services.writeoff_method', 'businessman_services.writeoff_value')
-        ->get()
-        ->toArray(),'Услуга');
+
     }
 
     /**
@@ -115,12 +110,13 @@ class BusinessmanStockApiController extends ApiBaseController
      */
     public function edit($uuid)
     {
-        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
-        ->where('businessman_services.businessmen_id', auth('api')->user()->id)
-        ->where('businessman_services.uuid', $uuid)
-        ->select('businessman_services.uuid', 'service_items.name', 'businessman_services.accrual_method', 'businessman_services.accrual_value', 'businessman_services.writeoff_value', 'businessman_services.writeoff_value')
+        return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+        ->where('stocks.client_id', auth('api')->user()->id)
+        ->where('stocks.uuid', $uuid)
+        ->select('stocks.uuid', 'service_items.uuid AS service_uuid', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at',
+        'stocks.sub_only', 'stocks.country', 'stocks.city')
         ->get()
-        ->toArray(),'Редактировать услугу');
+        ->toArray(),'Редактировать акцию');
     }
 
     /**
@@ -133,17 +129,17 @@ class BusinessmanStockApiController extends ApiBaseController
     public function update(Request $request, $uuid)
     {
         $validator = Validator::make($request->all(), [ 
-            'item_uuid' => 'required|uuid|exists:service_items,uuid',
-            'accrual_method' => [
+            'service_uuid' => 'required|uuid|exists:service_items,uuid',
+            'country' => 'required|string',
+            'city' => 'required|string',
+            'name' => 'required|string',
+            'description' => 'required',
+            // 'photo' => 'required',
+            'expires_at' => 'required|date',
+            'sub_only' => [
                 'required',
-                Rule::in(['points', 'percent']), // предприниматель, покупатель
+                Rule::in(['0', '1']), // для всех, для подписчиков
             ],
-            'writeoff_method' => [
-                'required',
-                Rule::in(['points', 'percent']), // предприниматель, покупатель
-            ],
-            'accrual_value' => 'required|integer',
-            'writeoff_value' => 'required|integer'
         ]);
 
         if ($validator->fails()) { 
