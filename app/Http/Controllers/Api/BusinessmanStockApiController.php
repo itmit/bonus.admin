@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class BusinessmanStockApiController extends ApiBaseController
 {
@@ -147,12 +148,17 @@ class BusinessmanStockApiController extends ApiBaseController
         }
 
         $item = ServiceItem::where('uuid', $request->item_uuid)->first()->id;
-        BusinessmanService::where('uuid', $uuid)->update([
-            'businessmen_id' => $item,
-            'accrual_method' => $request->accrual_method,
-            'writeoff_method' => $request->writeoff_method,
-            'accrual_value' => $request->accrual_value,
-            'writeoff_value' => $request->writeoff_value,
+        Stock::where('uuid', $uuid)->update([
+            'uuid' => Str::uuid(),
+            'client_id' => auth('api')->user()->id,
+            'service_id' => $item,
+            'country' => $request->country,
+            'city' => $request->city,
+            'name' => $request->name,
+            'description' => $request->description,
+            'photo' => $url,
+            'expires_at' => $request->expires_at,
+            'sub_only' => $request->sub_only,
         ]);
 
         return $this->sendResponse([],'Updated');
