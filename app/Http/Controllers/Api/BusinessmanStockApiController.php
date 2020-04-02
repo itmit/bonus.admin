@@ -27,11 +27,11 @@ class BusinessmanStockApiController extends ApiBaseController
      */
     public function index()
     {
-        return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
-        ->where('businessman_services.businessmen_id', auth('api')->user()->id)
-        ->select('businessman_services.uuid', 'service_items.name', 'businessman_services.accrual_method', 'businessman_services.accrual_value', 'businessman_services.writeoff_value', 'businessman_services.writeoff_method')
+        return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+        ->where('stocks.client_id', auth('api')->user()->id)
+        ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
         ->get()
-        ->toArray(),'Список созданных услуг');
+        ->toArray(),'Список акций');
     }
 
     /**
