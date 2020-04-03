@@ -28,9 +28,11 @@ class StockFilterApiController extends ApiBaseController
      */
     public function index()
     {
+
         return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
-        ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
+        ->select('stocks.city', 'service_items.name AS service_name', 'service_items.uuid AS uuid')
+        ->distinct()
         ->get()
-        ->toArray(),'Список акций');
+        ->toArray(),'Список городов и услуг');
     }
 }
