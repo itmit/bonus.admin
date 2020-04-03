@@ -189,7 +189,7 @@ class BusinessmanStockApiController extends ApiBaseController
         $stocks = Stock::where('expires_at', '<=', $yesterday)->get()->toArray();
         foreach($stocks as $stock)
         {
-            StockArchive::creat([
+            StockArchive::create([
                 'uuid' => Str::uuid(),
                 'client_id' => $stock->client_id,
                 'service_id' => $stock->service_id,
