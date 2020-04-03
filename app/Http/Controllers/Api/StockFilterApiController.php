@@ -28,10 +28,10 @@ class StockFilterApiController extends ApiBaseController
      */
     public function index()
     {
-        $cities = Stock::select('city')->distinct()->get()->toArray();
+        $cities = Stock::select('city')->distinct()->get();
         $services = Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
         ->select('service_items.name AS name', 'service_items.uuid AS uuid')
-        ->distinct()->get()->toArray();
+        ->distinct()->get();
         $result = [
             'cities' => $cities,
             'services' => $services
