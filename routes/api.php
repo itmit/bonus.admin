@@ -31,7 +31,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::resource('businessmanstock', 'Api\BusinessmanStockApiController');
 
     Route::resource('businessmanstockarchive', 'Api\BusinessmanStockArchiveApiController');
-    Route::resource('businessmanstockarchive/filtered', 'Api\BusinessmanStockArchiveApiController@filterStock');
+    Route::post('businessmanstockarchive/filtered', 'Api\BusinessmanStockArchiveApiController@filterStock');
 
     Route::resource('customerstock', 'Api\CustomerStockApiController');
 
