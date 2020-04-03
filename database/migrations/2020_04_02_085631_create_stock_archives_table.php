@@ -25,6 +25,7 @@ class CreateStockArchivesTable extends Migration
             $table->text('photo');
             $table->date('expires_at');
             $table->boolean('sub_only');
+            $table->timestamp('created');
             $table->timestamps();
             
             $table->foreign('client_id')->references('id')->on('clients');
