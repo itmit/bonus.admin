@@ -33,4 +33,42 @@ class CustomerStockApiController extends ApiBaseController
         ->get()
         ->toArray(),'Список акций');
     }
+
+    public function filterStock(Request $request)
+    {
+        if($request->uuid != null) $service = ServiceItem::where('uuid', $request->uuid)->first()->id;
+        else $service = null;
+        if($request->city != null && $service != null)
+        {
+            return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+            ->where('stocks.city', $request->city)
+            ->where('stocks.service_id', $service)
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
+        if($request->city == null && $service != null)
+        {
+            return $this->sendResponse(StockArchive::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+            ->where('stocks.service_id', $service)
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
+        if($request->city != null && $service == null)
+        {
+            return $this->sendResponse(StockArchive::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+            ->where('stocks.city', $request->city)
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
+        if($request->city == null && $service == null)
+        {
+            return $this->sendResponse(StockArchive::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
+    }
 }

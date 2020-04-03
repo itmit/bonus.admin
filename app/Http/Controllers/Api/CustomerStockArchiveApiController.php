@@ -36,14 +36,39 @@ class CustomerStockArchiveApiController extends ApiBaseController
 
     public function filterStock(Request $request)
     {
-        if($request->uuid) $service = ServiceItem::where('uuid', $request->uuid)->first()->id;
+        if($request->uuid != null) $service = ServiceItem::where('uuid', $request->uuid)->first()->id;
         else $service = null;
-        return $this->sendResponse(StockArchive::join('service_items', 'stock_archives.service_id', '=', 'service_items.id')
-        ->where('stock_archives.client_id', auth('api')->user()->id)
-        ->where('stock_archives.city', $request->city)
-        ->where('stock_archives.service_id', $service)
-        ->select('stock_archives.uuid', 'service_items.name AS service_name', 'stock_archives.name AS name', 'stock_archives.description', 'stock_archives.photo', 'stock_archives.expires_at', 'stock_archives.created')
-        ->get()
-        ->toArray(),'Список акций');
+        if($request->city != null && $service != null)
+        {
+            return $this->sendResponse(StockArchive::join('service_items', 'stock_archives.service_id', '=', 'service_items.id')
+            ->where('stock_archives.city', $request->city)
+            ->where('stock_archives.service_id', $service)
+            ->select('stock_archives.uuid', 'service_items.name AS service_name', 'stock_archives.name AS name', 'stock_archives.description', 'stock_archives.photo', 'stock_archives.expires_at', 'stock_archives.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
+        if($request->city == null && $service != null)
+        {
+            return $this->sendResponse(StockArchive::join('service_items', 'stock_archives.service_id', '=', 'service_items.id')
+            ->where('stock_archives.service_id', $service)
+            ->select('stock_archives.uuid', 'service_items.name AS service_name', 'stock_archives.name AS name', 'stock_archives.description', 'stock_archives.photo', 'stock_archives.expires_at', 'stock_archives.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
+        if($request->city != null && $service == null)
+        {
+            return $this->sendResponse(StockArchive::join('service_items', 'stock_archives.service_id', '=', 'service_items.id')
+            ->where('stock_archives.city', $request->city)
+            ->select('stock_archives.uuid', 'service_items.name AS service_name', 'stock_archives.name AS name', 'stock_archives.description', 'stock_archives.photo', 'stock_archives.expires_at', 'stock_archives.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
+        if($request->city == null && $service == null)
+        {
+            return $this->sendResponse(StockArchive::join('service_items', 'stock_archives.service_id', '=', 'service_items.id')
+            ->select('stock_archives.uuid', 'service_items.name AS service_name', 'stock_archives.name AS name', 'stock_archives.description', 'stock_archives.photo', 'stock_archives.expires_at', 'stock_archives.created')
+            ->get()
+            ->toArray(),'Список акций');
+        }
     }
 }
