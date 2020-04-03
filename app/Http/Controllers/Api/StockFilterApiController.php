@@ -28,7 +28,8 @@ class StockFilterApiController extends ApiBaseController
      */
     public function index()
     {
-
+        $cities = Stock::select('city')->distinct()->get()->toArray();
+        return $this->sendResponse($cities, '');
         return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
         ->select('stocks.city', 'service_items.name AS service_name', 'service_items.uuid AS uuid')
         ->distinct()
