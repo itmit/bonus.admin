@@ -183,7 +183,7 @@ class BusinessmanStockApiController extends ApiBaseController
         
     }
 
-    public function test()
+    public function test(Request $request)
     {
         // $yesterday = mktime(0, 0, 0, date("Y")  , date("m"), date("d")-1);
         // $stocks = Stock::where('expires_at', '<=', $yesterday)->get()->toArray();

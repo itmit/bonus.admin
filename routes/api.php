@@ -32,4 +32,4 @@ Route::group(['middleware' => 'auth:api'], function(){
     
 });
 
-Route::get('businessmanstock/test', 'Api\BusinessmanStockApiController@test');
+Route::post('businessmanstock/test', 'Api\BusinessmanStockApiController@test');
