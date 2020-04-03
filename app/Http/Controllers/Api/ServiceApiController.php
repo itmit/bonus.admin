@@ -79,6 +79,43 @@ class ServiceApiController extends ApiBaseController
         return $this->sendResponse($result,'');
     }
 
+    public function search()
+    {
+        $validator = Validator::make($request->all(), [ 
+            'login' => 'required|uuid|exists:clients',
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 500);            
+        }
+
+        $businessmenId = auth('api')->user()->id;
+
+        $client = Client::where('login', $request->login)->first();
+        $clientCustomer = ClientCustomer::where('id', $client->id)->first();
+
+        $balance = ClientBalance::where('customer_id', $client->id)->where('businessmen_id', $businessmenId)->first();
+        if($balance == NULL)
+        {
+            $balance = ClientBalance::create([
+                'uuid' => Str::uuid(),
+                'customer_id' => $client->id,
+                'businessmen_id' => $businessmenId,
+                'amount' => 0
+            ]);
+        }
+
+        $result = [
+            'client' => [
+                'name' => $client->name,
+                'photo' => $client->photo,
+            ],
+            'balance' => $balance->amount
+        ];
+
+        return $this->sendResponse($result,'');
+    }
+
     /**
      * Store a newly created resource in storage.
      *
