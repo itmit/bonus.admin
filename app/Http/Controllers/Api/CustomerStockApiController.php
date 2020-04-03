@@ -43,7 +43,7 @@ class CustomerStockApiController extends ApiBaseController
             return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
             ->where('stocks.city', $request->city)
             ->where('stocks.service_id', $service)
-            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
             ->get()
             ->toArray(),'Список акций');
         }
@@ -51,7 +51,7 @@ class CustomerStockApiController extends ApiBaseController
         {
             return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
             ->where('stocks.service_id', $service)
-            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
             ->get()
             ->toArray(),'Список акций');
         }
@@ -59,14 +59,14 @@ class CustomerStockApiController extends ApiBaseController
         {
             return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
             ->where('stocks.city', $request->city)
-            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
             ->get()
             ->toArray(),'Список акций');
         }
         if($request->city == null && $service == null)
         {
             return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
-            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at', 'stocks.created')
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
             ->get()
             ->toArray(),'Список акций');
         }
