@@ -79,7 +79,7 @@ class ServiceApiController extends ApiBaseController
         return $this->sendResponse($result,'');
     }
 
-    public function search()
+    public function search(Request $request)
     {
         $validator = Validator::make($request->all(), [ 
             'login' => 'required|uuid|exists:clients',
