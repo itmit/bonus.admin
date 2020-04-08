@@ -283,8 +283,8 @@ class AuthApiController extends ApiBaseController
                 $token->expires_at = Carbon::now()->addWeeks(1);
                 $token->save();
 
-                if($client->type == 'businessman') $clientInfo = ClientBusinessman::where('client_id', $client)->first();
-                if($client->type == 'customer') $clientInfo = ClientCustomer::where('client_id', $client)->first();
+                if($client->type == 'businessman') $clientInfo = ClientBusinessman::where('client_id', $client->id)->first();
+                if($client->type == 'customer') $clientInfo = ClientCustomer::where('client_id', $client->id)->first();
 
                 return $this->sendResponse([
                     'client' => $client,
