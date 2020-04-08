@@ -82,7 +82,7 @@ class ServiceApiController extends ApiBaseController
     public function search(Request $request)
     {
         $validator = Validator::make($request->all(), [ 
-            'login' => 'required|uuid|exists:clients',
+            'login' => 'required|uuid|exists:clients,uuid',
         ]);
 
         if ($validator->fails()) { 
