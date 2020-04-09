@@ -116,7 +116,7 @@ class BusinessmanStockApiController extends ApiBaseController
         ->where('stocks.uuid', $uuid)
         ->select('stocks.uuid', 'service_items.uuid AS service_uuid', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at',
         'stocks.sub_only', 'stocks.country', 'stocks.city')
-        ->get()
+        ->first()
         ->toArray(),'Редактировать акцию');
     }
 
