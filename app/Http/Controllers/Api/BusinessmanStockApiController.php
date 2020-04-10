@@ -147,7 +147,7 @@ class BusinessmanStockApiController extends ApiBaseController
             return response()->json(['errors'=>$validator->errors()], 400);            
         }
 
-        $item = ServiceItem::where('uuid', $request->item_uuid)->first()->id;
+        $item = ServiceItem::where('uuid', $request->service_uuid)->first()->id;
 
         if($request->photo != NULL)
         {
