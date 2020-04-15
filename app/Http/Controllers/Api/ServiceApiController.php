@@ -92,7 +92,7 @@ class ServiceApiController extends ApiBaseController
         $businessmenId = auth('api')->user()->id;
 
         $client = Client::where('login', $request->login)->first();
-        $clientCustomer = ClientCustomer::where('id', $client->id)->first();
+        $clientCustomer = ClientCustomer::where('client_id', $client->id)->first();
 
         $balance = ClientBalance::where('customer_id', $client->id)->where('businessmen_id', $businessmenId)->first();
         if($balance == NULL)
@@ -108,7 +108,7 @@ class ServiceApiController extends ApiBaseController
         $result = [
             'client' => [
                 'name' => $client->name,
-                'photo' => $client->photo,
+                'photo' => $clientCustomer->photo,
             ],
             'balance' => $balance->amount
         ];

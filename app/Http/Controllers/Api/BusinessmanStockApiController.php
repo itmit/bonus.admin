@@ -136,11 +136,7 @@ class BusinessmanStockApiController extends ApiBaseController
             'name' => 'required|string',
             'description' => 'required',
             // 'photo' => 'required',
-            'expires_at' => 'required|date',
-            'sub_only' => [
-                'required',
-                Rule::in(['0', '1']), // для всех, для подписчиков
-            ],
+            'expires_at' => 'required|date'
         ]);
 
         if ($validator->fails()) { 
@@ -149,14 +145,7 @@ class BusinessmanStockApiController extends ApiBaseController
 
         $item = ServiceItem::where('uuid', $request->service_uuid)->first()->id;
 
-        if($request->photo != NULL)
-        {
-            $path = $request->photo->store('public/stock');
-            $url = Storage::url($path);
-        }
-        else $url = NULL;
-        
-        Stock::where('uuid', $uuid)->update([
+        $updateArray = [
             'uuid' => Str::uuid(),
             'client_id' => auth('api')->user()->id,
             'service_id' => $item,
@@ -164,10 +153,16 @@ class BusinessmanStockApiController extends ApiBaseController
             'city' => $request->city,
             'name' => $request->name,
             'description' => $request->description,
-            'photo' => $url,
-            'expires_at' => $request->expires_at,
-            'sub_only' => $request->sub_only,
-        ]);
+            'expires_at' => $request->expires_at
+        ];
+
+        if($request->photo != NULL)
+        {
+            $path = $request->photo->store('public/stock');
+            $updateArray['photo'] = Storage::url($path);
+        }
+        
+        Stock::where('uuid', $uuid)->update($updateArray);
 
         return $this->sendResponse([],'Updated');
     }

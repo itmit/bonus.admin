@@ -29,6 +29,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::resource('client', 'Api\ClientApiController');
 
     Route::resource('businessmanstock', 'Api\BusinessmanStockApiController');
+    Route::post('businessmanstock/{uuid}', 'Api\BusinessmanStockApiController@update');
 
     Route::resource('businessmanstockarchive', 'Api\BusinessmanStockArchiveApiController');
     Route::post('businessmanstockarchive/filtered', 'Api\BusinessmanStockArchiveApiController@filterStock');
