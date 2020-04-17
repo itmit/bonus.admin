@@ -167,7 +167,7 @@ class AuthApiController extends ApiBaseController
         $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
 
         $request->phone = $phone;
-
+return $request->phone;
         $client = Client::where('uuid', $request->uuid)->first();
 
         if(!$client) return response()->json(['error'=>'Пользователь не найден'], 400); 
