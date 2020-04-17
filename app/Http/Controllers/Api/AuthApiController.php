@@ -159,15 +159,17 @@ class AuthApiController extends ApiBaseController
             return response()->json(['errors'=>$validator->errors()], 401);            
         }
 
-        $phone = request('phone');
+        $params = $request->all();
+        
+        $phone = $params['phone'];
 
         $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
         $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
         if(!$phoneNumberUtil->isPossibleNumber($phoneNumberObject)) return response()->json(['error'=>'Некорректный номер'], 500); 
         $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
 
-        $request->phone = $phone;
-return $request->phone;
+        $params['phone'] = $phone;
+        
         $client = Client::where('uuid', $request->uuid)->first();
 
         if(!$client) return response()->json(['error'=>'Пользователь не найден'], 400); 
@@ -185,7 +187,7 @@ return $request->phone;
 
         if($client->type == 'businessman')
         {
-            $validator = Validator::make($request->all(), [ 
+            $validator = Validator::make($params, [ 
                 'uuid' => 'required|uuid',
                 'country' => 'required|string',
                 'city' => 'required|string',
@@ -204,7 +206,7 @@ return $request->phone;
     
         if($client->type == 'customer')
         {
-            $validator = Validator::make($request->all(), [ 
+            $validator = Validator::make($params, [ 
                 'uuid' => 'required|uuid',
                 'country' => 'required|string',
                 'city' => 'required|string',
@@ -223,7 +225,7 @@ return $request->phone;
                 return response()->json(['errors'=>$validator->errors()], 500);            
             }
         }
-        dd($request);
+        
         try {
             DB::transaction(function () use ($request, $client, $url) {
                 if($client->type == 'businessman')
