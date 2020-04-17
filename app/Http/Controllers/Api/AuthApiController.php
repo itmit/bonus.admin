@@ -223,7 +223,7 @@ class AuthApiController extends ApiBaseController
                 return response()->json(['errors'=>$validator->errors()], 500);            
             }
         }
-return "---------------------";
+        dd($request);
         try {
             DB::transaction(function () use ($request, $client, $url) {
                 if($client->type == 'businessman')
