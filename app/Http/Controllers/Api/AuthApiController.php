@@ -151,7 +151,6 @@ class AuthApiController extends ApiBaseController
             'worktime' => 'string',
             'contact' => 'string',
             'phone' => 'required|string|unique:clients',
-            'description' => 'string',
             'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
             'password' => 'required|min:6'
         ]);
@@ -194,7 +193,6 @@ class AuthApiController extends ApiBaseController
                 'worktime' => 'required|string',
                 'contact' => 'required|string',
                 'phone' => 'required|string',
-                'description' => 'string',
                 'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
                 'password' => 'required|min:6'
             ]);
