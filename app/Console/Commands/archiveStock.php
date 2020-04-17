@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Stock;
 use App\Models\StockArchive;
+use Illuminate\Support\Str;
 
 class archiveStock extends Command
 {
