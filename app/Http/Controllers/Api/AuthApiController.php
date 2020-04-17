@@ -149,7 +149,7 @@ class AuthApiController extends ApiBaseController
             'car' => 'string',
             'address' => 'min:6',
             'worktime' => 'string',
-             'phone' => 'string',
+            'phone' => 'string',
             'contact' => 'string',
             'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
             'password' => 'required|min:6'
@@ -192,7 +192,7 @@ class AuthApiController extends ApiBaseController
                 'address' => 'required|min:6',
                 'worktime' => 'required|string',
                 'contact' => 'required|string',
-                'phone' => 'required|string',
+                'phone' => 'required|string|unique:clients',
                 'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
                 'password' => 'required|min:6'
             ]);
@@ -214,7 +214,7 @@ class AuthApiController extends ApiBaseController
                 ],
                 'birthday' => 'required|date',
                 'car' => 'string',
-                'phone' => 'string',
+                'phone' => 'required|string|unique:clients',
                 'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
                 'password' => 'required|min:6'
             ]);
