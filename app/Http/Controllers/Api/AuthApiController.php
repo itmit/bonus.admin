@@ -149,6 +149,7 @@ class AuthApiController extends ApiBaseController
             'car' => 'string',
             'address' => 'min:6',
             'worktime' => 'string',
+             'phone' => 'string',
             'contact' => 'string',
             'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
             'password' => 'required|min:6'
