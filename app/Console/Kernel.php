@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use App\Console\Commands\archiveStock;
 
 class Kernel extends ConsoleKernel
 {
@@ -13,7 +14,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        //
+        archiveStock::class,
     ];
 
     /**
@@ -24,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('command:archiveStock')->dailyAt('12:00');
+        $schedule->command('command:archiveStock')->everyTenMinutes();
     }
 
     /**
