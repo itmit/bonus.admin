@@ -27,7 +27,7 @@ class ServiceApiController extends ApiBaseController
     public function index()
     {
         $result = [];
-        $types = ServiceType::orderBy('name')->get(['id', 'uuid', 'name']);
+        $types = ServiceType::where('client_id', null)->orWhere('client_id', auth('api')->user()->id)->orderBy('name')->get(['id', 'uuid', 'name']);
         foreach ($types as $type) {
             $items = ServiceItem::select('uuid', 'name')->where('service_type_id', $type->id)->get();
             $itemsResult = [];
@@ -225,5 +225,46 @@ class ServiceApiController extends ApiBaseController
     public function destroy($id)
     {
         //
+    }
+
+    public function storeServiceType(Request $request)
+    {
+        $validator = Validator::make($request->all(), [ 
+            'name' => 'required|string|min:2|max:191',
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        ServiceType::create([
+            'uuid' => Str::uuid(),
+            'client_id' => auth('api')->user()->id,
+            'name' => $request->name,
+        ]);
+
+        return $this->sendResponse([],'Type created');
+    }
+
+    public function storeServiceItem(Request $request)
+    {
+        $validator = Validator::make($request->all(), [ 
+            'uuid' => 'required|uuid|exists:service_types',
+            'name' => 'required|string|min:2|max:191',
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        $type = ServiceType::where('uuid', $request->uuid)->first();
+
+        ServiceItem::create([
+            'uuid' => Str::uuid(),
+            'service_type_id' => $type->id,
+            'name' => $request->name,
+        ]);
+
+        return $this->sendResponse([],'Item created');
     }
 }

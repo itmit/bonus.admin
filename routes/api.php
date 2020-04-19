@@ -23,6 +23,8 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::resource('service', 'Api\ServiceApiController');
     Route::post('service/getCustomerByUUID', 'Api\ServiceApiController@getCustomerByUUID');
     Route::post('service/searchCustomer', 'Api\ServiceApiController@search');
+    Route::post('service/storeServiceType', 'Api\ServiceApiController@storeServiceType');
+    Route::post('service/storeServiceItem', 'Api\ServiceApiController@storeServiceItem');
 
     Route::resource('businessmanservice', 'Api\BusinessmanServiceApiController');
     
@@ -41,6 +43,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('customerstockarchive/filtered', 'Api\CustomerStockArchiveApiController@filterStock');
 
     Route::resource('stockfilter', 'Api\StockFilterApiController');
+
 });
 
 Route::post('businessmanstock/test', 'Api\BusinessmanStockApiController@test');

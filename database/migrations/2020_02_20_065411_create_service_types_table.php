@@ -16,9 +16,12 @@ class CreateServiceTypesTable extends Migration
         Schema::create('service_types', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->uuid('uuid');
+            $table->bigInteger('client_id')->unsigned()->nullable()->default(null);
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('client_id')->references('id')->on('clients');
         });
     }
 
