@@ -180,10 +180,10 @@ class ClientApiController extends ApiBaseController
      */
     public function update(Request $request, $id)
     {
-        $client = Client::where('id', $id)->first();
+        $client = Client::where('uuid', $id)->first();
         if($client->type == 'businessman')
         {
-            ClientBusinessman::where('client_id', $id)->update([
+            ClientBusinessman::where('client_id', $client->id)->update([
                 'country' => $request->country,
                 'city' => $request->city,
                 'address' => $request->address,
@@ -195,7 +195,7 @@ class ClientApiController extends ApiBaseController
         }
         if($client->type == 'customer')
         {
-            ClientCustomer::where('client_id', $id)->update([
+            ClientCustomer::where('client_id', $client->id)->update([
                 'country' => $request->country,
                 'city' => $request->city,
                 'sex' => $request->sex,
