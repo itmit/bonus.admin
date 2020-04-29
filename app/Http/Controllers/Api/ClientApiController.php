@@ -178,9 +178,15 @@ class ClientApiController extends ApiBaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        $client = Client::where('uuid', $id)->first();
+        $client = Client::where('id', auth('api')->user()->id)->first();
+        if($request->photo != NULL)
+        {
+            $path = $request->photo->store('public/avatars');
+            $url = Storage::url($path);
+        }
+        else $url = NULL;
         if($client->type == 'businessman')
         {
             ClientBusinessman::where('client_id', $client->id)->update([
@@ -190,7 +196,7 @@ class ClientApiController extends ApiBaseController
                 'work_time' => $request->work_time,
                 'contact' => $request->contact,
                 'description' => $request->description,
-                'photo' => $request->photo,
+                'photo' => $url,
             ]);   
         }
         if($client->type == 'customer')
@@ -201,7 +207,7 @@ class ClientApiController extends ApiBaseController
                 'sex' => $request->sex,
                 'birthday' => $request->birthday,
                 'car' => $request->car,
-                'photo' => $request->photo,
+                'photo' => $url,
             ]);
         }
         
