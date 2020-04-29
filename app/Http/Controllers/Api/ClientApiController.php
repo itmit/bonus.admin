@@ -189,6 +189,19 @@ class ClientApiController extends ApiBaseController
         else $url = NULL;
         if($client->type == 'businessman')
         {
+            $validator = Validator::make($request->all(), [ 
+                'phone' => 'required|unique:clients',
+                'email' => 'required|unique:clients',
+            ]);
+    
+            if ($validator->fails()) { 
+                return response()->json(['errors'=>$validator->errors()], 400);            
+            }
+            Client::where('client_id', $client->id)->update([
+                'phone' => $request->phone,
+                'name' => $request->name,
+                'email' => $request->email,
+            ]);
             ClientBusinessman::where('client_id', $client->id)->update([
                 'country' => $request->country,
                 'city' => $request->city,
@@ -201,6 +214,16 @@ class ClientApiController extends ApiBaseController
         }
         if($client->type == 'customer')
         {
+            $validator = Validator::make($request->all(), [ 
+                'phone' => 'required|unique:clients',
+            ]);
+    
+            if ($validator->fails()) { 
+                return response()->json(['errors'=>$validator->errors()], 400);            
+            }
+            Client::where('client_id', $client->id)->update([
+                'phone' => $request->phone,
+            ]);
             ClientCustomer::where('client_id', $client->id)->update([
                 'country' => $request->country,
                 'city' => $request->city,
@@ -209,6 +232,7 @@ class ClientApiController extends ApiBaseController
                 'car' => $request->car,
                 'photo' => $url,
             ]);
+            
         }
         
         return $this->sendResponse([],'Обновлено');
