@@ -178,7 +178,7 @@ class ClientApiController extends ApiBaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         $client = Client::where('id', auth('api')->user()->id)->first();
         if($request->photo != NULL)
