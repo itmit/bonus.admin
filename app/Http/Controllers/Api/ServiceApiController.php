@@ -70,6 +70,7 @@ class ServiceApiController extends ApiBaseController
 
         $result = [
             'client' => [
+                'uuid' => $client->uuid,
                 'name' => $client->name,
                 'photo' => $client->photo,
             ],
@@ -107,6 +108,7 @@ class ServiceApiController extends ApiBaseController
 
         $result = [
             'client' => [
+                'uuid' => $client->uuid,
                 'name' => $client->name,
                 'photo' => $clientCustomer->photo,
             ],
