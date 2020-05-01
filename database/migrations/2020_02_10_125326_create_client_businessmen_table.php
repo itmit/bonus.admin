@@ -23,6 +23,10 @@ class CreateClientBusinessmenTable extends Migration
             $table->string('contact');
             $table->text('description')->nullable();
             $table->text('photo')->nullable();
+            $table->string('vk')->nullable();
+            $table->string('facebook')->nullable();
+            $table->string('instagram')->nullable();
+            $table->string('odnoklassniki')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

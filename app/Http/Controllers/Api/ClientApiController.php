@@ -189,11 +189,19 @@ class ClientApiController extends ApiBaseController
         else $url = NULL;
         if($client->type == 'businessman')
         {
-            $validator = Validator::make($request->all(), [ 
-                'phone' => 'required|unique:clients',
-                'email' => 'required|unique:clients',
-            ]);
-    
+            if($request->phone)
+            {
+                $validator = Validator::make($request->all(), [ 
+                    'phone' => 'required|unique:clients',
+                ]);
+            }
+            if($request->email)
+            {
+                $validator = Validator::make($request->all(), [ 
+                    'email' => 'required|unique:clients',
+                ]);
+            }
+            
             if ($validator->fails()) { 
                 return response()->json(['errors'=>$validator->errors()], 400);            
             }
@@ -210,13 +218,20 @@ class ClientApiController extends ApiBaseController
                 'contact' => $request->contact,
                 'description' => $request->description,
                 'photo' => $url,
+                'vk' => $request->vk,
+                'facebook' => $request->facebook,
+                'instagram' => $request->instagram,
+                'odnoklassniki' => $request->odnoklassniki,
             ]);   
         }
         if($client->type == 'customer')
         {
-            $validator = Validator::make($request->all(), [ 
-                'phone' => 'required|unique:clients',
-            ]);
+            if($request->phone)
+            {
+                $validator = Validator::make($request->all(), [ 
+                    'phone' => 'required|unique:clients',
+                ]);
+            }
     
             if ($validator->fails()) { 
                 return response()->json(['errors'=>$validator->errors()], 400);            
