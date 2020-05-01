@@ -25,7 +25,7 @@ class PortfolioController extends ApiBaseController
      */
     public function index()
     {
-        $portfolio = Portfolio::where('client_id', auth('api')->user()->id)->get(['uuid', 'file']);
+        $portfolio = Portfolio::where('client_id', auth('api')->user()->id)->get(['uuid', 'file'])->toArray();
         return $this->sendResponse($portfolio,'');
     }
 
