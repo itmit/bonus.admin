@@ -45,6 +45,8 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     Route::resource('stockfilter', 'Api\StockFilterApiController');
 
+    Route::resource('portfolio', 'Api\PortfolioController');
+
 });
 
 Route::post('businessmanstock/test', 'Api\BusinessmanStockApiController@test');
