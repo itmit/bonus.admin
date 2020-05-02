@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use App\Models\ServiceType;
-use App\Models\ServiceItem;
-use App\Models\ClientCustomer;
-use App\Models\ClientBusinessman;
-use App\Models\ClientBalance;
 use App\Models\Client;
-use App\Models\BusinessmanService;
-use App\Models\CustomerService;
+use App\Models\ServiceItem;
+use App\Models\ServiceType;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
+use App\Models\ClientBalance;
+use App\Models\ClientCustomer;
+use App\Models\CustomerService;
 use Illuminate\Validation\Rule;
+use App\Models\ClientBusinessman;
+use App\Models\BusinessmanService;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ClientApiController extends ApiBaseController
 {
@@ -28,8 +29,7 @@ class ClientApiController extends ApiBaseController
     {
         $client = Client::where('id', auth('api')->user()->id)->first();
         $result = [];
-        if($client->type == 'businessman')
-        {
+        if ($client->type == 'businessman') {
             $info = ClientBusinessman::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
@@ -47,8 +47,7 @@ class ClientApiController extends ApiBaseController
                 'photo' => $info->photo,
             ];
         }
-        if($client->type == 'customer')
-        {
+        if ($client->type == 'customer') {
             $info = ClientCustomer::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
@@ -65,8 +64,8 @@ class ClientApiController extends ApiBaseController
                 'photo' => $info->photo,
             ];
         }
-        
-        return $this->sendResponse($result,'Клиент');
+
+        return $this->sendResponse($result, 'Клиент');
     }
 
     /**
@@ -79,8 +78,7 @@ class ClientApiController extends ApiBaseController
     {
         $client = Client::where('id', auth('api')->user()->id)->first();
         $result = [];
-        if($client->type == 'businessman')
-        {
+        if ($client->type == 'businessman') {
             $info = ClientBusinessman::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
@@ -98,8 +96,7 @@ class ClientApiController extends ApiBaseController
                 'photo' => $info->photo,
             ];
         }
-        if($client->type == 'customer')
-        {
+        if ($client->type == 'customer') {
             $info = ClientCustomer::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
@@ -116,8 +113,8 @@ class ClientApiController extends ApiBaseController
                 'photo' => $info->photo,
             ];
         }
-        
-        return $this->sendResponse($result,'Клиент');
+
+        return $this->sendResponse($result, 'Клиент');
     }
 
     /**
@@ -130,8 +127,7 @@ class ClientApiController extends ApiBaseController
     {
         $client = Client::where('id', auth('api')->user()->id)->first();
         $result = [];
-        if($client->type == 'businessman')
-        {
+        if ($client->type == 'businessman') {
             $info = ClientBusinessman::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
@@ -149,8 +145,7 @@ class ClientApiController extends ApiBaseController
                 'photo' => $info->photo,
             ];
         }
-        if($client->type == 'customer')
-        {
+        if ($client->type == 'customer') {
             $info = ClientCustomer::where('client_id', $client->id)->first();
             $result = [
                 'uuid' => $client->uuid,
@@ -167,8 +162,8 @@ class ClientApiController extends ApiBaseController
                 'photo' => $info->photo,
             ];
         }
-        
-        return $this->sendResponse($result,'Клиент');
+
+        return $this->sendResponse($result, 'Клиент');
     }
 
     /**
@@ -181,60 +176,74 @@ class ClientApiController extends ApiBaseController
     public function update(Request $request, $id)
     {
         $client = Client::where('id', auth('api')->user()->id)->first();
-        if($request->photo != NULL)
-        {
+        if ($request->photo != NULL) {
             $path = $request->photo->store('public/avatars');
             $url = Storage::url($path);
+        } else {
+            $url = NULL;
         }
-        else $url = NULL;
-        if($client->type == 'businessman')
-        {
-            if($request->phone)
-            {
-                $validator = Validator::make($request->all(), [ 
-                    'phone' => 'required|unique:clients',
+
+        if ($client->type == 'businessman') {
+            $rules = [];
+            $clientUpdateArray = [];
+            if ($request->phone) {
+                $rules['phone'] = 'required|unique:clients';
+                $clientUpdateArray['phone'] = $request->phone;
+            }
+            if ($request->email) {
+                $rules['email'] = 'required|unique:clients';
+                $clientUpdateArray['email'] = $request->email;
+            }
+            if ($request->name) {
+                $rules['name'] = 'required';
+                $clientUpdateArray['name'] = $request->email;
+            }
+
+            if (count($rules) > 0 && count($clientUpdateArray) > 0) {
+                $validator = Validator::make($request->all(), $rules);
+
+                if ($validator->fails()) {
+                    return response()->json(['errors' => $validator->errors()], 400);
+                }
+
+                Client::where('client_id', $client->id)->update([
+                    'phone' => $request->phone,
+                    'name' => $request->name,
+                    'email' => $request->email,
                 ]);
             }
-            if($request->email)
-            {
-                $validator = Validator::make($request->all(), [ 
-                    'email' => 'required|unique:clients',
-                ]);
+
+            $fields =  [
+                'country',
+                'city',
+                'address',
+                'work_time',
+                'contact',
+                'description',
+                'photo',
+                'vk',
+                'facebook',
+                'instagram',
+                'odnoklassniki'
+            ];
+            $updateArray = [];
+            foreach($request->toArray() as $key => $value) {
+               if (in_array($key, $fields) && $value){
+                    $updateArray[$key] = $value;
+               } 
             }
             
-            if ($validator->fails()) { 
-                return response()->json(['errors'=>$validator->errors()], 400);            
-            }
-            Client::where('client_id', $client->id)->update([
-                'phone' => $request->phone,
-                'name' => $request->name,
-                'email' => $request->email,
-            ]);
-            ClientBusinessman::where('client_id', $client->id)->update([
-                'country' => $request->country,
-                'city' => $request->city,
-                'address' => $request->address,
-                'work_time' => $request->work_time,
-                'contact' => $request->contact,
-                'description' => $request->description,
-                'photo' => $url,
-                'vk' => $request->vk,
-                'facebook' => $request->facebook,
-                'instagram' => $request->instagram,
-                'odnoklassniki' => $request->odnoklassniki,
-            ]);   
+            ClientBusinessman::where('client_id', $client->id)->update($updateArray);
         }
-        if($client->type == 'customer')
-        {
-            if($request->phone)
-            {
-                $validator = Validator::make($request->all(), [ 
+        if ($client->type == 'customer') {
+            if ($request->phone) {
+                $validator = Validator::make($request->all(), [
                     'phone' => 'required|unique:clients',
                 ]);
             }
-    
-            if ($validator->fails()) { 
-                return response()->json(['errors'=>$validator->errors()], 400);            
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 400);
             }
             Client::where('client_id', $client->id)->update([
                 'phone' => $request->phone,
@@ -247,10 +256,9 @@ class ClientApiController extends ApiBaseController
                 'car' => $request->car,
                 'photo' => $url,
             ]);
-            
         }
-        
-        return $this->sendResponse([],'Обновлено');
+
+        return $this->sendResponse([], 'Обновлено');
     }
 
     /**
