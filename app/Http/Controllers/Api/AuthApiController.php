@@ -256,7 +256,7 @@ class AuthApiController extends ApiBaseController
             return response()->json(['errors' => $th], 500);
         }
 
-        return self::auth($client, $request->password);
+        return self::auth(Client::where('uuid', $request->uuid)->first(), $request->password);
     }
 
     private function auth($client, $password)
