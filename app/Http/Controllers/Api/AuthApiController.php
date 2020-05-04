@@ -25,7 +25,7 @@ class AuthApiController extends ApiBaseController
 
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'email' => 'required|unique:clients|email|max:191',
             'name' => 'required|max:191|min:2|string',
             'login' => 'required|min:2|max:191|string',
@@ -36,14 +36,13 @@ class AuthApiController extends ApiBaseController
             ],
             'device_token' => 'string'
         ]);
-        
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 401);            
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 401);
         }
 
-        if(Client::where('email', '=', $request->email)->exists())
-        {
-            return response()->json(['error'=>'Клиент уже зарегистрирован'], 401);     
+        if (Client::where('email', '=', $request->email)->exists()) {
+            return response()->json(['error' => 'Клиент уже зарегистрирован'], 401);
         }
 
         try {
@@ -56,36 +55,35 @@ class AuthApiController extends ApiBaseController
                     'type' => $request->type,
                     'password' => Hash::make($request->password),
                 ]);
-    
-                if($request->device_token)
-                {
+
+                if ($request->device_token) {
                     Client::where('id', '=', $this->user->id)->update([
                         'device_token' => $request->device_token
                     ]);
                 };
-
             });
         } catch (\Throwable $th) {
-            return response()->json(['error'=>$th], 401);      
+            return response()->json(['error' => $th], 401);
         }
 
-        return $this->sendResponse(['uuid' => $this->user->uuid],'Зарегистрировано');
+        return $this->sendResponse(['uuid' => $this->user->uuid], 'Зарегистрировано');
     }
 
     /** 
      * login api 
      * 
      * @return Response 
-     */ 
-    public function login(Request $request) { 
+     */
+    public function login(Request $request)
+    {
 
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'login' => 'required',
             'password' => 'required|min:6',
         ]);
-        
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 401);            
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 401);
         }
 
         if (filter_var(request('login'), FILTER_VALIDATE_EMAIL)) // ЛОГИН ПОЧТА
@@ -105,22 +103,18 @@ class AuthApiController extends ApiBaseController
             $client = Client::where('phone', $request->login)->first();
         }
 
-        if(!$client)
-        {
-            return response()->json(['error'=>'Такого пользователя не существует'], 401); 
+        if (!$client) {
+            return response()->json(['error' => 'Такого пользователя не существует'], 401);
         }
 
-        if($client->type == 'businessman')
-        {
+        if ($client->type == 'businessman') {
             $isInfoFilled = ClientBusinessman::where('client_id', '=', $client->id)->exists();
         }
-        if($client->type == 'customer')
-        {
+        if ($client->type == 'customer') {
             $isInfoFilled = ClientCustomer::where('client_id', '=', $client->id)->exists();
         }
 
-        if(!$isInfoFilled)
-        {
+        if (!$isInfoFilled) {
             return $this->sendResponse(['uuid' => $client->uuid, 'type' => $client->type], 'Данные о пользователе не заполнены', false);
         }
 
@@ -130,17 +124,16 @@ class AuthApiController extends ApiBaseController
     public function logout(Request $request)
     {
         $isUser = $request->client()->token()->revoke();
-        if($isUser){
+        if ($isUser) {
             return $this->sendResponse([], "Successfully logged out.");
-        }
-        else{
+        } else {
             return $this->sendResponse([], "Something went wrong.");
         }
     }
-    
+
     public function fillInfo(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'uuid' => 'required|uuid',
             'country' => 'required|string',
             'city' => 'required|string',
@@ -153,39 +146,38 @@ class AuthApiController extends ApiBaseController
             'password' => 'required|min:6'
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 401);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 401);
         }
 
         $params = $request->all();
-        
+
         $phone = $params['phone'];
 
         $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
         $phoneNumberObject = $phoneNumberUtil->parse($phone, null);
-        if(!$phoneNumberUtil->isPossibleNumber($phoneNumberObject)) return response()->json(['error'=>'Некорректный номер'], 500); 
+        if (!$phoneNumberUtil->isPossibleNumber($phoneNumberObject)) {
+            return response()->json(['error' => 'Некорректный номер'], 500);
+        }
         $phone = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
 
         $params['phone'] = $phone;
-        
+
         $client = Client::where('uuid', $request->uuid)->first();
 
-        if(!$client) return response()->json(['error'=>'Пользователь не найден'], 400); 
+        if (!$client) return response()->json(['error' => 'Пользователь не найден'], 400);
 
-        if(!Hash::check($request->password, $client->password)) return response()->json(['error'=>'Неверный пароль'], 401); 
+        if (!Hash::check($request->password, $client->password)) return response()->json(['error' => 'Неверный пароль'], 401);
 
-        if(ClientBusinessman::where('client_id', $client->id)->exists() || ClientCustomer::where('client_id', $client->id)->exists()) return response()->json(['error'=>'Данные о пользователе уже заполнены'], 500); 
+        if (ClientBusinessman::where('client_id', $client->id)->exists() || ClientCustomer::where('client_id', $client->id)->exists()) return response()->json(['error' => 'Данные о пользователе уже заполнены'], 500);
 
-        if($request->photo != NULL)
-        {
+        if ($request->photo != NULL) {
             $path = $request->photo->store('public/avatars');
             $url = Storage::url($path);
-        }
-        else $url = NULL;
+        } else $url = NULL;
 
-        if($client->type == 'businessman')
-        {
-            $validator = Validator::make($params, [ 
+        if ($client->type == 'businessman') {
+            $validator = Validator::make($params, [
                 'uuid' => 'required|uuid',
                 'country' => 'required|string',
                 'city' => 'required|string',
@@ -196,15 +188,14 @@ class AuthApiController extends ApiBaseController
                 'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
                 'password' => 'required|min:6'
             ]);
-    
-            if ($validator->fails()) { 
-                return response()->json(['errors'=>$validator->errors()], 500);            
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 500);
             }
         };
-    
-        if($client->type == 'customer')
-        {
-            $validator = Validator::make($params, [ 
+
+        if ($client->type == 'customer') {
+            $validator = Validator::make($params, [
                 'uuid' => 'required|uuid',
                 'country' => 'required|string',
                 'city' => 'required|string',
@@ -218,62 +209,59 @@ class AuthApiController extends ApiBaseController
                 'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
                 'password' => 'required|min:6'
             ]);
-    
-            if ($validator->fails()) { 
-                return response()->json(['errors'=>$validator->errors()], 500);            
+
+            if ($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 500);
             }
         }
-        
+
         try {
-            DB::transaction(function () use ($request, $client, $url) {
-                if($client->type == 'businessman')
-                {
+            DB::transaction(function () use ($params, $client, $url) {
+                if ($client->type == 'businessman') {
                     ClientBusinessman::create([
                         'client_id' => $client->id,
-                        'country' => $request->country,
-                        'city' => $request->city,
-                        'address' => $request->address,
-                        'work_time' => $request->worktime,
-                        'contact' => $request->contact,
-                        'description' => $request->description,
+                        'country' => $params['country'],
+                        'city' => $params['city'],
+                        'address' => $params['address'],
+                        'work_time' => $params['worktime'],
+                        'contact' => $params['contact'],
+                        'description' => $params['description'],
                         'photo' => $url,
                     ]);
-    
-                    Client::where('uuid', $request->uuid)->update([
-                        'phone' => $request->phone,
+
+                    Client::where('uuid', $params['uuid'])->update([
+                        'phone' => $params['phone'],
                         'active' => 1,
                     ]);
                 };
-    
-                if($client->type == 'customer')
-                {
+
+                if ($client->type == 'customer') {
                     ClientCustomer::create([
                         'client_id' => $client->id,
-                        'country' => $request->country,
-                        'city' => $request->city,
-                        'sex' => $request->sex,
-                        'birthday' => $request->birthday,
-                        'car' => $request->car,
+                        'country' => $params['country'],
+                        'city' => $params['city'],
+                        'sex' => $params['sex'],
+                        'birthday' => $params['birthday'],
+                        'car' => $params['car'],
                         'photo' => $url,
                     ]);
-    
-                    Client::where('uuid', $request->uuid)->update([
-                        'phone' => $request->phone,
+
+                    Client::where('uuid', $params['uuid'])->update([
+                        'phone' => $params['phone'],
                         'active' => 1,
                     ]);
                 }
             });
         } catch (\Throwable $th) {
-            return response()->json(['errors'=>$th], 500);   
+            return response()->json(['errors' => $th], 500);
         }
-        
+
         return self::auth($client, $request->password);
     }
 
     private function auth($client, $password)
     {
-        if(Hash::check($password, $client->password))
-        {
+        if (Hash::check($password, $client->password)) {
             Auth::login($client);
             if (Auth::check()) {
                 $tokenResult = $client->createToken(config('app.name'));
@@ -281,24 +269,24 @@ class AuthApiController extends ApiBaseController
                 $token->expires_at = Carbon::now()->addWeeks(1);
                 $token->save();
 
-                if($client->type == 'businessman') $clientInfo = ClientBusinessman::where('client_id', $client->id)->first();
-                if($client->type == 'customer') $clientInfo = ClientCustomer::where('client_id', $client->id)->first();
+                if ($client->type == 'businessman') $clientInfo = ClientBusinessman::where('client_id', $client->id)->first();
+                if ($client->type == 'customer') $clientInfo = ClientCustomer::where('client_id', $client->id)->first();
 
-                return $this->sendResponse([
-                    'client' => $client,
-                    'client_info' => $clientInfo,
-                    'access_token' => $tokenResult->accessToken,
-                    'token_type' => 'Bearer',
-                    'expires_at' => Carbon::parse(
-                        $tokenResult->token->expires_at
-                    )->toDateTimeString(),
-                ],
-                    'Authorization is successful');
+                return $this->sendResponse(
+                    [
+                        'client' => $client,
+                        'client_info' => $clientInfo,
+                        'access_token' => $tokenResult->accessToken,
+                        'token_type' => 'Bearer',
+                        'expires_at' => Carbon::parse(
+                            $tokenResult->token->expires_at
+                        )->toDateTimeString(),
+                    ],
+                    'Authorization is successful'
+                );
             }
-        }
-        else
-        {
-            return response()->json(['error'=>'Неверный пароль'], 401); 
+        } else {
+            return response()->json(['error' => 'Неверный пароль'], 401);
         }
     }
 }
