@@ -188,7 +188,13 @@ class ClientApiController extends ApiBaseController
             $clientUpdateArray = [];
             if ($request->phone) {
                 $rules['phone'] = 'required|unique:clients';
-                $clientUpdateArray['phone'] = $request->phone;
+
+                $phoneNumberUtil = \libphonenumber\PhoneNumberUtil::getInstance();
+                $phoneNumberObject = $phoneNumberUtil->parse($request->phone, null);
+                if (!$phoneNumberUtil->isPossibleNumber($phoneNumberObject)) {
+                    return response()->json(['error' => 'Некорректный номер'], 500);
+                }
+                $clientUpdateArray['phone'] = $phoneNumberUtil->format($phoneNumberObject, \libphonenumber\PhoneNumberFormat::E164);
             }
             if ($request->email) {
                 $rules['email'] = 'required|unique:clients';
@@ -200,17 +206,13 @@ class ClientApiController extends ApiBaseController
             }
 
             if (count($rules) > 0 && count($clientUpdateArray) > 0) {
-                $validator = Validator::make($request->all(), $rules);
+                $validator = Validator::make($clientUpdateArray, $rules);
 
                 if ($validator->fails()) {
                     return response()->json(['errors' => $validator->errors()], 400);
                 }
 
-                Client::where('client_id', $client->id)->update([
-                    'phone' => $request->phone,
-                    'name' => $request->name,
-                    'email' => $request->email,
-                ]);
+                Client::where('client_id', $client->id)->update($clientUpdateArray);
             }
 
             $fields =  [
@@ -227,12 +229,12 @@ class ClientApiController extends ApiBaseController
                 'odnoklassniki'
             ];
             $updateArray = [];
-            foreach($request->toArray() as $key => $value) {
-               if (in_array($key, $fields) && $value){
+            foreach ($request->toArray() as $key => $value) {
+                if (in_array($key, $fields) && $value) {
                     $updateArray[$key] = $value;
-               } 
+                }
             }
-            
+
             ClientBusinessman::where('client_id', $client->id)->update($updateArray);
         }
         if ($client->type == 'customer') {

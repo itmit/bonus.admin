@@ -131,12 +131,10 @@ class AuthApiController extends ApiBaseController
     {
         $isUser = $request->client()->token()->revoke();
         if($isUser){
-            $success['message'] = "Successfully logged out.";
-            return $this->sendResponse($success);
+            return $this->sendResponse([], "Successfully logged out.");
         }
         else{
-            $error = "Something went wrong.";
-            return $this->sendResponse($error);
+            return $this->sendResponse([], "Something went wrong.");
         }
     }
     
