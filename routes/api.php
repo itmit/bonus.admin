@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('service/searchCustomer', 'Api\ServiceApiController@search');
     Route::post('service/storeServiceType', 'Api\ServiceApiController@storeServiceType');
     Route::post('service/storeServiceItem', 'Api\ServiceApiController@storeServiceItem');
+    Route::post('service/removeServiceItem', 'Api\ServiceApiController@storeServiceItem');
 
     Route::resource('businessmanservice', 'Api\BusinessmanServiceApiController');
     

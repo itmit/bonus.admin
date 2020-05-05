@@ -39,17 +39,17 @@ class ServiceApiController extends ApiBaseController
                 'items' => $itemsResult
             ];
         }
-        return $this->sendResponse($result,'');
+        return $this->sendResponse($result, '');
     }
 
     public function getCustomerByUUID(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'uuid' => 'required|uuid|exists:clients',
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 500);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 500);
         }
 
         $businessmenId = auth('api')->user()->id;
@@ -58,8 +58,7 @@ class ServiceApiController extends ApiBaseController
         $clientCustomer = ClientCustomer::where('id', $client->id)->first();
 
         $balance = ClientBalance::where('customer_id', $client->id)->where('businessmen_id', $businessmenId)->first();
-        if($balance == NULL)
-        {
+        if ($balance == NULL) {
             $balance = ClientBalance::create([
                 'uuid' => Str::uuid(),
                 'customer_id' => $client->id,
@@ -77,17 +76,17 @@ class ServiceApiController extends ApiBaseController
             'balance' => $balance->amount
         ];
 
-        return $this->sendResponse($result,'');
+        return $this->sendResponse($result, '');
     }
 
     public function search(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'login' => 'required|exists:clients',
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 500);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 500);
         }
 
         $businessmenId = auth('api')->user()->id;
@@ -96,8 +95,7 @@ class ServiceApiController extends ApiBaseController
         $clientCustomer = ClientCustomer::where('client_id', $client->id)->first();
 
         $balance = ClientBalance::where('customer_id', $client->id)->where('businessmen_id', $businessmenId)->first();
-        if($balance == NULL)
-        {
+        if ($balance == NULL) {
             $balance = ClientBalance::create([
                 'uuid' => Str::uuid(),
                 'customer_id' => $client->id,
@@ -115,7 +113,7 @@ class ServiceApiController extends ApiBaseController
             'balance' => $balance->amount
         ];
 
-        return $this->sendResponse($result,'');
+        return $this->sendResponse($result, '');
     }
 
     /**
@@ -126,7 +124,7 @@ class ServiceApiController extends ApiBaseController
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'client_uuid' => 'required|uuid|exists:clients,uuid',
             'service_uuid' => 'required|uuid|exists:businessman_services,uuid',
             'price' => 'required|integer|min:1|max:999999',
@@ -142,46 +140,44 @@ class ServiceApiController extends ApiBaseController
             'writeoff_value' => 'required|integer'
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 400);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
         $serviceId = BusinessmanService::where('uuid', $request->service_uuid)->first()->id;
         $customerId = Client::where('uuid', $request->client_uuid)->first()->id;
         $businessmenId = auth('api')->user()->id;
         $balance = ClientBalance::where('customer_id', $customerId)->where('businessmen_id', $businessmenId)->first();
-        if($balance == NULL)
-        {
-            return response()->json(['error'=>'Произошла ошибка сервера (клиент не имеет баланса у выбранного предпринимателя)'], 500);
+        if ($balance == NULL) {
+            return response()->json(['error' => 'Произошла ошибка сервера (клиент не имеет баланса у выбранного предпринимателя)'], 500);
         }
 
         // try {
-            DB::transaction(function () use ($request, $serviceId, $customerId, $balance) {
-                CustomerService::create([
-                    'uuid' => Str::uuid(),
-                    'service_id' => $serviceId,
-                    'customer_id' => $customerId,
-                    'price' => $request->price,
-                    'accrual_method' => $request->accrual_method,
-                    'writeoff_method' => $request->writeoff_method,
-                    'accrual_value' => $request->accrual_value,
-                    'writeoff_value' => $request->writeoff_value,
-                ]);
+        DB::transaction(function () use ($request, $serviceId, $customerId, $balance) {
+            CustomerService::create([
+                'uuid' => Str::uuid(),
+                'service_id' => $serviceId,
+                'customer_id' => $customerId,
+                'price' => $request->price,
+                'accrual_method' => $request->accrual_method,
+                'writeoff_method' => $request->writeoff_method,
+                'accrual_value' => $request->accrual_value,
+                'writeoff_value' => $request->writeoff_value,
+            ]);
 
-                $amount = $balance->amount - $request->writeoff_value;
-                $amount = $amount + $request->accrual_value;
-                
-                ClientBalance::where('uuid', $balance->uuid)->update([
-                    'uuid' => Str::uuid(),
-                    'amount' => $amount
-                ]);
-            });
+            $amount = $balance->amount - $request->writeoff_value;
+            $amount = $amount + $request->accrual_value;
+
+            ClientBalance::where('uuid', $balance->uuid)->update([
+                'uuid' => Str::uuid(),
+                'amount' => $amount
+            ]);
+        });
         // } catch (\Throwable $th) {
         //     return response()->json(['error'=>$th], 500);      
         // }
 
-        return $this->sendResponse([],'');
-
+        return $this->sendResponse([], '');
     }
 
     /**
@@ -231,42 +227,56 @@ class ServiceApiController extends ApiBaseController
 
     public function storeServiceType(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|min:2|max:191',
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 400);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
-        ServiceType::create([
+        $type = ServiceType::create([
             'uuid' => Str::uuid(),
             'client_id' => auth('api')->user()->id,
             'name' => $request->name,
         ]);
 
-        return $this->sendResponse([],'Type created');
+        return $this->sendResponse($type->toArray(), 'Type created');
     }
 
     public function storeServiceItem(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'uuid' => 'required|uuid|exists:service_types',
             'name' => 'required|string|min:2|max:191',
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 400);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
         $type = ServiceType::where('uuid', $request->uuid)->first();
 
-        ServiceItem::create([
+        $item = ServiceItem::create([
             'uuid' => Str::uuid(),
             'service_type_id' => $type->id,
             'name' => $request->name,
         ]);
 
-        return $this->sendResponse([],'Item created');
+        return $this->sendResponse($item->toArray(), 'Item created');
+    }
+
+    public function removeServiceItem(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'uuid' => 'required|uuid|exists:service_items'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        ServiceItem::where('uuid', $request->uuid)->delete();
+        return $this->sendResponse([],'Deleted');
     }
 }
