@@ -74,9 +74,9 @@ class ClientApiController extends ApiBaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($uuid)
     {
-        $client = Client::where('id', auth('api')->user()->id)->first();
+        $client = Client::where('id', $uuid)->first();
         $result = [];
         if ($client->type == 'businessman') {
             $info = ClientBusinessman::where('client_id', $client->id)->first();
