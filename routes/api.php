@@ -50,6 +50,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::resource('portfolio', 'Api\PortfolioController');
 
     Route::resource('news', 'Api\NewsApiController');
+    Route::get('news/{uuid}', 'Api\NewsApiController@getNewsImage');
 });
 
 Route::post('businessmanstock/test', 'Api\BusinessmanStockApiController@test');

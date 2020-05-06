@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\News;
+use App\Models\NewsImage;
 use App\Http\Controllers\Controller;
 
 class NewsApiController extends ApiBaseController
@@ -10,5 +11,10 @@ class NewsApiController extends ApiBaseController
     public function index()
     {
         return $this->sendResponse(News::all()->toArray(), "News");
+    }
+
+    public function getNewsImage($uuid)
+    {
+        return $this->sendResponse(NewsImage::where('news_id', '=', News::where('uuid', '=', $uuid)->first()->id)->toArray(), "News images");
     }
 }
