@@ -15,6 +15,6 @@ class NewsApiController extends ApiBaseController
 
     public function show($uuid)
     {
-        return $this->sendResponse(NewsImage::where('news_id', '=', News::where('uuid', '=', $uuid)->first()->id)->toArray(), "News images");
+        return $this->sendResponse(NewsImage::where('news_id', '=', News::where('uuid', '=', $uuid)->first()->id)->get()->toArray(), "News images");
     }
 }
