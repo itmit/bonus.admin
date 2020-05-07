@@ -76,45 +76,18 @@ class ClientApiController extends ApiBaseController
      */
     public function show($uuid)
     {
-        $client = Client::where('id', $uuid)->first();
-        $result = [];
+        $client = Client::where('uuid', $uuid)->first();
         if ($client->type == 'businessman') {
             $info = ClientBusinessman::where('client_id', $client->id)->first();
-            $result = [
-                'uuid' => $client->uuid,
-                'email' => $client->email,
-                'phone' => $client->phone,
-                'login' => $client->login,
-                'name' => $client->name,
-                'type' => $client->type,
-                'country' => $info->country,
-                'city' => $info->city,
-                'address' => $info->address,
-                'work_time' => $info->work_time,
-                'contact' => $info->contact,
-                'description' => $info->description,
-                'photo' => $info->photo,
-            ];
+            
         }
         if ($client->type == 'customer') {
             $info = ClientCustomer::where('client_id', $client->id)->first();
-            $result = [
-                'uuid' => $client->uuid,
-                'email' => $client->email,
-                'phone' => $client->phone,
-                'login' => $client->login,
-                'name' => $client->name,
-                'type' => $client->type,
-                'country' => $info->country,
-                'city' => $info->city,
-                'sex' => $info->sex,
-                'birthday' => $info->birthday,
-                'car' => $info->car,
-                'photo' => $info->photo,
-            ];
         }
-
-        return $this->sendResponse($result, 'Клиент');
+        return $this->sendResponse([
+            'client' => $client,
+            'client_info' => $info
+        ], 'Клиент');
     }
 
     /**
