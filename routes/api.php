@@ -50,6 +50,9 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::resource('portfolio', 'Api\PortfolioController');
 
     Route::resource('news', 'Api\NewsApiController');
+
+    Route::resource('dialogs', 'Api\DialogApiController');
+    Route::post('sendMessage', 'Api\DialogApiController@sendMessage');
 });
 
 Route::post('businessmanstock/test', 'Api\BusinessmanStockApiController@test');
