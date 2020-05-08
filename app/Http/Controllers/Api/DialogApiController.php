@@ -65,7 +65,7 @@ class DialogApiController extends ApiBaseController
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [ 
-            'client_uuid' => 'required|uuid|exists:clients'
+            'client_uuid' => 'required|uuid|exists:clients,uuid'
         ]);
 
         if ($validator->fails()) { 
