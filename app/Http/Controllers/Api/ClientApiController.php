@@ -175,7 +175,7 @@ class ClientApiController extends ApiBaseController
             }
             if ($request->name) {
                 $rules['name'] = 'required';
-                $clientUpdateArray['name'] = $request->email;
+                $clientUpdateArray['name'] = $request->name;
             }
 
             if (count($rules) > 0 && count($clientUpdateArray) > 0) {
