@@ -58,6 +58,7 @@ class DialogApiController extends ApiBaseController
             }
             $dialog->UserName = $client->name;
             $dialog->UserUuid = $client->uuid;
+            $dialog->UserLogin = $client->login;
 
             $dialog->IsReadShown = $lastMsg->client_from == $userId ? true : false;
             $dialog->IsRead = $lastMsg->is_read ? true : false;
@@ -153,7 +154,7 @@ class DialogApiController extends ApiBaseController
 
         $dialog->delete();
 
-        return $this->sendResponse($id, 'Dialog deleted successfully.');
+        return $this->sendResponse(["id" => $id], 'Dialog deleted successfully.');
     }
 
     public function sendMessage(Request $request)
