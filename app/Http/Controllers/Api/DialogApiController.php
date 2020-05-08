@@ -57,6 +57,7 @@ class DialogApiController extends ApiBaseController
                 $dialog->UserPhoto = ClientCustomer::where('client_id', $otherUserId)->value('photo');
             }
             $dialog->UserName = $client->name;
+            $dialog->UserUuid = $client->uuid;
 
             $dialog->IsReadShown = $lastMsg->client_from == $userId ? true : false;
             $dialog->IsRead = $lastMsg->is_read ? true : false;
