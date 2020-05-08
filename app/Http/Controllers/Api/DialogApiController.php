@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Dialog;
 use App\Models\Message;
 use App\Models\Client;
+use App\Models\ClientBusinessman;
+use App\Models\ClientCustomer;
 use DB;
 
 class DialogApiController extends ApiBaseController
@@ -19,13 +21,13 @@ class DialogApiController extends ApiBaseController
         $userId = auth('api')->user()->id;
 
         $dialogs = Dialog::whereExists(function ($query) {
-                $query->select(DB::raw(1))
-                      ->from('messages')
-                      ->whereRaw('messages.dialog_id = dialogs.id');
-            })
-            ->where(function ($query) use($userId) {
+            $query->select(DB::raw(1))
+                ->from('messages')
+                ->whereRaw('messages.dialog_id = dialogs.id');
+        })
+            ->where(function ($query) use ($userId) {
                 $query->where('client_from', $userId)
-                      ->orWhere('client_to', $userId);
+                    ->orWhere('client_to', $userId);
             })
             ->orderBy('updated_at', 'desc')
             ->get();
@@ -44,16 +46,22 @@ class DialogApiController extends ApiBaseController
             //     $dialog->ImageUri = null;
             // }
 
-            $lastMsg = Message::select('client_from','content', 'is_read')->where('dialog_id', $dialog->id)->latest()->first();
+            $lastMsg = Message::select('client_from', 'content', 'is_read')->where('dialog_id', $dialog->id)->latest()->first();
             $dialog->lastMsg = $lastMsg->content;
 
-            $dialog->UserName = Client::where('id', $otherUserId)->value('name');
+            $client = Client::where('id', $otherUserId)->first();
+            if ($client->type == "businessman") {
+                $dialog->UserPhoto = ClientBusinessman::where('client_id', $otherUserId)->value('photo');
+            }
+            if ($client->type == "customer") {
+                $dialog->UserPhoto = ClientCustomer::where('client_id', $otherUserId)->value('photo');
+            }
+            $dialog->UserName = $client->name;
 
             $dialog->IsReadShown = $lastMsg->client_from == $userId ? true : false;
             $dialog->IsRead = $lastMsg->is_read ? true : false;
-
         }
-        return $this->sendResponse($dialogs->toArray(),'Список диалогов пользователя');
+        return $this->sendResponse($dialogs->toArray(), 'Список диалогов пользователя');
     }
 
     /**
@@ -64,12 +72,12 @@ class DialogApiController extends ApiBaseController
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'client_uuid' => 'required|uuid|exists:clients,uuid'
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 400);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
         $userId = auth('api')->user()->id;
@@ -77,9 +85,9 @@ class DialogApiController extends ApiBaseController
         $targetClient = Client::select('id', 'name')->where('uuid', $request->client_uuid)->first();
 
         $dialog = Dialog::where([
-                ['client_from', '=', $userId],
-                ['client_to', '=', $targetClient->id],
-            ])
+            ['client_from', '=', $userId],
+            ['client_to', '=', $targetClient->id],
+        ])
             ->orWhere([
                 ['client_from', '=', $targetClient->id],
                 ['client_to', '=', $userId],
@@ -149,13 +157,13 @@ class DialogApiController extends ApiBaseController
 
     public function sendMessage(Request $request)
     {
-        $validator = Validator::make($request->all(), [ 
+        $validator = Validator::make($request->all(), [
             'dialog_id' => 'required|exists:dialogs,id',
             'content' => 'required|max:255',
         ]);
 
-        if ($validator->fails()) { 
-            return response()->json(['errors'=>$validator->errors()], 400);            
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
         }
 
         $userId = auth('api')->user()->id;
@@ -165,13 +173,13 @@ class DialogApiController extends ApiBaseController
         if ($request->has('file')) {
             $file = base64_decode($request->file);
 
-            $safeName = str_random(10).'.png';
+            $safeName = str_random(10) . '.png';
             $destinationPath = storage_path('app/public/messageFiles/' . $request->DialogId);
 
-            if( !is_dir($destinationPath) )
-                mkdir( $destinationPath, 0777, true );
+            if (!is_dir($destinationPath))
+                mkdir($destinationPath, 0777, true);
 
-            $success = file_put_contents($destinationPath . '/'. $safeName, $file);
+            $success = file_put_contents($destinationPath . '/' . $safeName, $file);
 
             $messageFile = '/storage/messageFiles/' . $request->DialogId . '/' . $safeName;
         }
