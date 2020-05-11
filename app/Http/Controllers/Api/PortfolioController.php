@@ -47,12 +47,12 @@ class PortfolioController extends ApiBaseController
 
         $path = $request->photo->store('public/portfolio');
         $url = Storage::url($path);
-        Portfolio::create([
+        
+        return $this->sendResponse(Portfolio::create([
             'uuid' => Str::uuid(),
             'client_id' => auth('api')->user()->id,
             'file' => $url
-        ]);
-        return $this->sendResponse([],'Stored');
+        ])->toArray(),'Stored');
     }
 
     /**
