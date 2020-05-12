@@ -27,6 +27,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::post('service/storeServiceType', 'Api\ServiceApiController@storeServiceType');
     Route::post('service/storeServiceItem', 'Api\ServiceApiController@storeServiceItem');
     Route::post('service/removeServiceItem', 'Api\ServiceApiController@removeServiceItem');
+    Route::post('service/getAllServices', 'Api\ServiceApiController@getAllServices');
 
     Route::resource('businessmanservice', 'Api\BusinessmanServiceApiController');
     

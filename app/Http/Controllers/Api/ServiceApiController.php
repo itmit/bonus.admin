@@ -42,6 +42,36 @@ class ServiceApiController extends ApiBaseController
         return $this->sendResponse($result, '');
     }
 
+    public function getAllServices()
+    {
+        $items = ServiceItem::select('uuid', 'name', 'client_id')->get()->toArray();
+        $users = [];
+        foreach($items as $item){
+            $users[] = $item['client_id'];
+        }
+        array_unique($users);
+        $clients = Client::where('id', '=', $users)
+            ->join('client_businessmen', 'clients.id', '=', 'client_businessmen.client_id')
+            ->select('clients.name', 'clients.id', 'client_businessmen.photo')->get();
+
+        $clientsArray = [];
+        foreach($clients as $value)
+        {
+            $clientsArray[$value->id] = $value->toArray();
+        }
+        foreach($items as &$item)
+        {
+            $item['client'] = [
+                'uuid' => $clientsArray[$item['client_id']]['uuid'],
+                'name' => $clientsArray[$item['client_id']]['name'],
+                'photo' => $clientsArray[$item['client_id']]['photo'],
+            ];
+        }
+        var_dump($items);
+        die();
+        return $this->sendResponse($items, 'services');
+    }
+
     public function getCustomerByUUID(Request $request)
     {
         $validator = Validator::make($request->all(), [
