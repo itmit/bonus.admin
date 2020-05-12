@@ -185,7 +185,7 @@ class ClientApiController extends ApiBaseController
                     return response()->json(['errors' => $validator->errors()], 400);
                 }
 
-                Client::where('client_id', $client->id)->update($clientUpdateArray);
+                Client::where('id', $client->id)->update($clientUpdateArray);
             }
 
             $fields =  [
