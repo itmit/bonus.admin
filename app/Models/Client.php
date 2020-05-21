@@ -48,4 +48,14 @@ class Client extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+
+    public function getCustomerInfo()
+    {
+        return $this->hasOne(ClientCustomer::class, 'client_id')->first();
+    }
+
+    public function getBusinessmenInfo()
+    {
+        return $this->hasOne(ClientBusinessman::class, 'client_id')->first();
+    }
 }

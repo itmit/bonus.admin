@@ -44,21 +44,26 @@ class ServiceApiController extends ApiBaseController
 
     public function getAllServices()
     {
-        $items = ServiceItem::select('uuid', 'name', 'client_id')->get()->toArray();
+        $items = BusinessmanService::select('businessman_services.uuid', 'accrual_method', 'writeoff_method', 'accrual_value', 'writeoff_value', 'service_items.name', 'businessmen_id as client_id')
+            ->join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')->get()->toArray();
+
         $users = [];
+        
         foreach($items as $item){
-            $users[] = $item['client_id'];
+                $users[] = $item['client_id'];
         }
         array_unique($users);
-        $clients = Client::where('id', '=', $users)
+
+        $clients = Client::whereIn('clients.id', $users)
             ->join('client_businessmen', 'clients.id', '=', 'client_businessmen.client_id')
-            ->select('clients.name', 'clients.id', 'client_businessmen.photo')->get();
+            ->select('clients.name', 'clients.id', 'clients.uuid', 'client_businessmen.photo')->get();
 
         $clientsArray = [];
         foreach($clients as $value)
         {
             $clientsArray[$value->id] = $value->toArray();
         }
+
         foreach($items as &$item)
         {
             $item['client'] = [
@@ -66,10 +71,24 @@ class ServiceApiController extends ApiBaseController
                 'name' => $clientsArray[$item['client_id']]['name'],
                 'photo' => $clientsArray[$item['client_id']]['photo'],
             ];
+            unset($item['client_id']);
         }
-        var_dump($items);
-        die();
+
         return $this->sendResponse($items, 'services');
+    }
+
+    public function getMyBonuses()
+    {
+        $items = CustomerService::where('customer_id', '=', auth('api')->user()->id)
+            ->join('businessman_services', 'businessman_services.id', 'service_id')
+            ->join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
+            ->join('clients', 'clients.id', 'businessman_services.businessmen_id')
+            ->select('customer_services.accrual_method', 'customer_services.writeoff_method', 'customer_services.accrual_value', 'customer_services.writeoff_value', 'service_items.name as name', 'clients.name as businessman_name')->get()->toArray();
+        foreach($items as &$item){
+            $item['client'] = ['name'=> $item['businessman_name']];
+            unset($item['businessman_name']);
+        }
+        return $this->sendResponse($items, 'services');;
     }
 
     public function getCustomerByUUID(Request $request)

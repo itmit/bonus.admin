@@ -13,6 +13,7 @@ use App\Models\Client;
 use App\Models\BusinessmanService;
 use App\Models\Stock;
 use App\Models\StockArchive;
+use App\Models\ClientToStock;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -70,5 +71,35 @@ class CustomerStockApiController extends ApiBaseController
             ->get()
             ->toArray(),'Список акций');
         }
+    }
+
+    public function addToFavorite(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'stock_uuid' => 'required|uuid|exists:stocks,uuid'
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        $targetStockId = Stock::where('uuid', $request->stock_uuid)->value('id');
+
+        $clientToStock = ClientToStock::firstOrCreate(
+            ['customer_id' => auth('api')->user()->id, 'stock_id' => $targetStockId]
+        );
+
+        return $this->sendResponse([], 'Добавлено в избранное');
+    }
+
+    public function getFavoriteStocks()
+    {
+        $favorites = ClientToStock::join('stocks', 'client_to_stock.stock_id', '=', 'stocks.id')
+            ->join('service_items', 'stocks.service_id', '=', 'service_items.id')
+            ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
+            ->where('client_to_stock.customer_id', auth('api')->user()->id)
+            ->get();
+
+        return $this->sendResponse($favorites->toArray(), 'Список избранных акций');
     }
 }

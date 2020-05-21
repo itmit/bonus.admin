@@ -12,6 +12,7 @@ use App\Models\ClientCustomer;
 use App\Models\CustomerService;
 use Illuminate\Validation\Rule;
 use App\Models\ClientBusinessman;
+use App\Models\ClientToBusinessman;
 use App\Models\BusinessmanService;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -245,5 +246,62 @@ class ClientApiController extends ApiBaseController
     public function destroy($id)
     {
         //
+    }
+
+    public function subscribeToBusinessman(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'businessmen_uuid' => 'required|uuid|exists:clients,uuid'
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        $targetClientId = Client::where('uuid', $request->businessmen_uuid)->value('id');
+
+        $clientToBusinessman = ClientToBusinessman::updateOrCreate(
+            ['customer_id' => auth('api')->user()->id, 'businessman_id' => $targetClientId],
+            ['is_active' => 1]
+        );
+
+        return $this->sendResponse([], 'Подписка оформлена');
+    }
+
+    public function getSubscriptuions()
+    {
+        $currentClient = Client::select('id', 'type')->where('id', auth('api')->user()->id)->first();
+
+        $isBusinessman = ($currentClient->type == "businessman");
+
+        if ($isBusinessman) {
+            $subscriptions = ClientToBusinessman::select('id', 'customer_id', 'businessman_id')->where('businessman_id', $currentClient->id)->where('is_active', 1)->get();
+        }
+        else {
+            $subscriptions = ClientToBusinessman::select('id', 'customer_id', 'businessman_id')->where('customer_id', $currentClient->id)->where('is_active', 1)->get();
+        }
+
+        foreach ($subscriptions as $key => &$subscription) {
+            if ($isBusinessman) {
+                $otherUserId = $subscription->customer_id;
+                $subscription->photo = ClientCustomer::where('client_id', $otherUserId)->value('photo');
+            }
+            else {
+                $otherUserId = $subscription->businessman_id;
+                $subscription->photo = ClientBusinessman::where('client_id', $otherUserId)->value('photo');
+            }
+            
+            $client = Client::where('id', $otherUserId)->first();
+
+            $subscription->uuid = $client->uuid;
+            $subscription->name = $client->name;
+            $subscription->login = $client->login;
+
+            unset($subscription->id);
+            unset($subscription->customer_id);
+            unset($subscription->businessman_id);
+        }
+
+        return $this->sendResponse($subscriptions->toArray(), 'Список подписок');
     }
 }
