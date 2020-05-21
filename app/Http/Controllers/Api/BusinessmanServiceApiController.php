@@ -27,7 +27,14 @@ class BusinessmanServiceApiController extends ApiBaseController
     {
         return $this->sendResponse(BusinessmanService::join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
         ->where('businessman_services.businessmen_id', auth('api')->user()->id)
-        ->select('businessman_services.uuid', 'service_items.name', 'businessman_services.accrual_method', 'businessman_services.accrual_value', 'businessman_services.writeoff_value', 'businessman_services.writeoff_method')
+        ->select(
+            'businessman_services.uuid',
+            'service_items.name',
+            'service_items.uuid as service_item_uuid',
+            'businessman_services.accrual_method',
+            'businessman_services.accrual_value',
+            'businessman_services.writeoff_value',
+            'businessman_services.writeoff_method')
         ->get()
         ->toArray(),'Список созданных услуг');
     }
@@ -142,16 +149,13 @@ class BusinessmanServiceApiController extends ApiBaseController
             return response()->json(['errors'=>$validator->errors()], 400);            
         }
 
-        $item = ServiceItem::where('uuid', $request->item_uuid)->first()->id;
-        BusinessmanService::where('uuid', $uuid)->update([
-            'businessmen_id' => $item,
+        return $this->sendResponse(BusinessmanService::where('uuid', $uuid)->update([
+            'businessmen_id' => ServiceItem::where('uuid', $request->item_uuid)->first()->id,
             'accrual_method' => $request->accrual_method,
             'writeoff_method' => $request->writeoff_method,
             'accrual_value' => $request->accrual_value,
             'writeoff_value' => $request->writeoff_value,
-        ]);
-
-        return $this->sendResponse([],'Updated');
+        ])->toArray(),'Updated');
     }
 
     /**
