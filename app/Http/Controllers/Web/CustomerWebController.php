@@ -33,8 +33,19 @@ class CustomerWebController extends Controller
     public function show($id)
     {
         $user = Client::findOrFail($id);
+        $userInfo = $user->getCustomerInfo();
 
-        return view('clients.client', ['user' => $user, 'userInfo' => $user->getCustomerInfo()]);
+        if ($userInfo == null) {
+            $userInfo = new \stdClass();
+            $userInfo->photo = null;
+            $userInfo->city = null;
+            $userInfo->country = null;
+            $userInfo->sex = null;
+            $userInfo->birthday = null;
+            $userInfo->car = null;
+        }
+
+        return view('clients.client', ['user' => $user, 'userInfo' => $userInfo]);
     }
 
     /**
