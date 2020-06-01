@@ -91,11 +91,19 @@
 
                     @if($admin == 1)
 
-                    <li name="customers" style="width: 100%"><a href="{{ route('auth.customers.index') }}">Покупатели</a></li>
+                    <li name="customers"><a href="{{ route('auth.customers.index') }}">Покупатели</a></li>
 
-                    <li name="businessmen" style="width: 100%"><a href="{{ route('auth.businessmen.index') }}">Предприниматели</a></li>
+                    <li name="businessmen"><a href="{{ route('auth.businessmen.index') }}">Предприниматели</a></li>
 
-                    <li name="stocks" style="width: 100%"><a href="{{ route('auth.stocks.index') }}">Акции</a></li>
+                    <li name="stocks"><a href="{{ route('auth.stocks.index') }}">Акции</a></li>
+
+                    <li name="archives"><a href="{{ route('auth.archives.index') }}">Архив акций</a></li>
+
+                    <li name="news"><a href="{{ route('auth.news.index') }}">Новости</a></li>
+
+                    <li name="services"><a href="{{ route('auth.services.index') }}">Услуги</a></li>
+
+                    <li name="serviceTypes"><a href="{{ route('auth.serviceTypes.index') }}">Виды услуг</a></li>
 
                     @endif
 

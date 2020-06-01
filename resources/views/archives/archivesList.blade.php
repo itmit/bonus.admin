@@ -9,10 +9,9 @@
             <table class="table policy-table">
                 <thead>
                 <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Нзвание</th>
                     <th scope="col">Страна</th>
                     <th scope="col">Город</th>
+                    <th scope="col">Нзвание</th>
                     <th scope="col">Описание</th>
                     <th scope="col">Истекает</th>
                     <th scope="col">Действие</th>
@@ -21,13 +20,12 @@
                 <tbody>
                 @foreach($stocks as $item)
                     <tr>
-                        <td><a href="stocks/{{ $item->id }}">{{ $item->id }}</a></td>
-                        <td>{{ $item->name }}</td>
                         <td>{{ $item->country }}</td>
                         <td>{{ $item->city }}</td>
+                        <td>{{ $item->name }}</td>
                         <td>{{ $item->description }}</td>
                         <td>{{ $item->expires_at }}</td>
-                        <td><button type="button" class="btn btn-danger delete-master" data-id="{{$item->id}}">Удалить</button></td>
+                        <td><button type="button" class="btn btn-danger delete-item" data-id="{{$item->id}}">Удалить</button></td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -38,9 +36,9 @@
 
 <script>
 
-$(document).on('click', '.delete-master', function() {
+$(document).on('click', '.delete-item', function() {
     var _self = $(this);
-    let isDelete = confirm("Удалить клиента? Данное действие невозможно отменить!");
+    let isDelete = confirm("Удалить? Данное действие невозможно отменить!");
 
     if(isDelete)
     {
@@ -49,7 +47,7 @@ $(document).on('click', '.delete-master', function() {
             headers : {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
             dataType: "json",
             data    : { id: id },
-            url     : 'clients/delete',
+            url     : 'archives/delete',
             method    : 'delete',
             success: function (response) {
                 _self.closest('tr').remove();

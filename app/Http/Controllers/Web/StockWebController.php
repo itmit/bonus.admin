@@ -24,9 +24,15 @@ class StockWebController extends Controller
         ]);
     }
 
+    /**
+     */
     public function show($id)
     {
-        # code...
+        $stock = Stock::where('id', $id)->first();
+
+        return view('stocks.stockDetail', [
+            'stock' => $stock,
+        ]); 
     }
 
     /**
@@ -48,6 +54,23 @@ class StockWebController extends Controller
     public function store(Request $request)
     {
         return null;
+    }
+
+    /**
+     * update resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function update($id, Request $request)
+    {
+        $stock = Stock::findOrFail($id);
+
+        $input = $request->all();
+
+        $stock->fill($input)->save();
+
+        return redirect()->route('auth.stocks.index');
     }
 
     /**

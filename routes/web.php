@@ -15,11 +15,15 @@ Route::group(['as' => 'auth.', 'middleware' => 'auth'], function () {
     
     Route::view('/', 'main');
 
-    Route::resource('customers', 'Web\CustomerWebController');
-
-    Route::resource('businessmen', 'Web\BusinessmanWebController');
-
-    Route::resource('stocks', 'Web\StockWebController');
+    Route::apiResources([
+        'customers' => 'Web\CustomerWebController',
+        'businessmen' => 'Web\BusinessmanWebController',
+        'stocks' => 'Web\StockWebController',
+        'news' => 'Web\NewsWebController',
+        'archives' => 'Web\ArchiveWebController',
+        'services' => 'Web\ServiceWebController',
+        'serviceTypes' => 'Web\ServiceTypeWebController',
+    ]);
     
 });
 

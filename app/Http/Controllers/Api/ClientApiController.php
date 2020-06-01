@@ -268,6 +268,25 @@ class ClientApiController extends ApiBaseController
         return $this->sendResponse([], 'Подписка оформлена');
     }
 
+    public function unsubscribeToBusinessman(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'businessmen_uuid' => 'required|uuid|exists:clients,uuid'
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        $targetClientId = Client::where('uuid', $request->businessmen_uuid)->value('id');
+
+        ClientToBusinessman::where('customer_id', auth('api')->user()->id)
+        ->where('businessman_id', $targetClientId)
+        ->delete();
+
+        return $this->sendResponse([], 'Отписка');
+    }
+
     public function getSubscriptuions()
     {
         $currentClient = Client::select('id', 'type')->where('id', auth('api')->user()->id)->first();
@@ -275,33 +294,49 @@ class ClientApiController extends ApiBaseController
         $isBusinessman = ($currentClient->type == "businessman");
 
         if ($isBusinessman) {
-            $subscriptions = ClientToBusinessman::select('id', 'customer_id', 'businessman_id')->where('businessman_id', $currentClient->id)->where('is_active', 1)->get();
-        }
-        else {
-            $subscriptions = ClientToBusinessman::select('id', 'customer_id', 'businessman_id')->where('customer_id', $currentClient->id)->where('is_active', 1)->get();
-        }
+            $subscriptions = ClientToBusinessman::select('clients.id', 'photo', 'name', 'login', 'clients.uuid')
+            ->join('client_customers', 'client_to_businessman.customer_id', 'client_customers.client_id')
+            ->join('clients', 'client_to_businessman.customer_id', 'clients.id')
+            ->where('businessman_id', $currentClient->id)
+            ->where('is_active', 1)
+            ->get()->toArray();
 
-        foreach ($subscriptions as $key => &$subscription) {
-            if ($isBusinessman) {
-                $otherUserId = $subscription->customer_id;
-                $subscription->photo = ClientCustomer::where('client_id', $otherUserId)->value('photo');
+            foreach($subscriptions as &$item){
+                $item['amount'] = 0;
+                $users[$item['id']] = $item;
+                unset($users[$item['id']]['id']);
             }
-            else {
-                $otherUserId = $subscription->businessman_id;
-                $subscription->photo = ClientBusinessman::where('client_id', $otherUserId)->value('photo');
-            }
+    
+            $items = ClientBalance::whereIn('customer_id', array_keys($users))->where('businessmen_id', $currentClient->id)->get();
             
-            $client = Client::where('id', $otherUserId)->first();
+            foreach ($items as $item){
+                $users[$item->customer_id]['amount'] = $item->amount;
+            }
 
-            $subscription->uuid = $client->uuid;
-            $subscription->name = $client->name;
-            $subscription->login = $client->login;
-
-            unset($subscription->id);
-            unset($subscription->customer_id);
-            unset($subscription->businessman_id);
+            return $this->sendResponse(array_values($users), 'Список подписок');
+        }
+        
+        $subscriptions = ClientToBusinessman::select('clients.id', 'photo', 'name', 'login', 'clients.uuid')
+            ->join('client_businessmen', 'client_to_businessman.businessman_id', 'client_businessmen.client_id')
+            ->join('clients', 'client_to_businessman.businessman_id', 'clients.id')
+            ->where('customer_id', $currentClient->id)->where('is_active', 1)->get()->toArray();
+            $users = [];
+        
+        foreach($subscriptions as &$item){
+            $item['services']=[];
+            $users[$item['id']] = $item;
+            unset($users[$item['id']]['id']);
         }
 
-        return $this->sendResponse($subscriptions->toArray(), 'Список подписок');
+        $items = ServiceItem::select('service_items.name', 'client_id')
+        ->join('service_types', 'service_items.service_type_id', '=', 'service_types.id')
+        ->whereIn('client_id', array_keys($users))
+        ->get();
+        
+        foreach ($items as $item){
+            $users[$item->client_id]['services'][] = $item->name;
+        }
+        
+        return $this->sendResponse(array_values($users), 'Список подписок');
     }
 }

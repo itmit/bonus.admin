@@ -83,9 +83,12 @@ class ServiceApiController extends ApiBaseController
             ->join('businessman_services', 'businessman_services.id', 'service_id')
             ->join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')
             ->join('clients', 'clients.id', 'businessman_services.businessmen_id')
-            ->select('customer_services.accrual_method', 'customer_services.writeoff_method', 'customer_services.accrual_value', 'customer_services.writeoff_value', 'service_items.name as name', 'clients.name as businessman_name')->get()->toArray();
+            ->select('customer_services.accrual_method', 'customer_services.writeoff_method', 'customer_services.accrual_value', 'customer_services.writeoff_value', 'service_items.name as name', 
+            'clients.name as businessman_name',
+            'clients.uuid as businessman_uuid')->get()->toArray();
         foreach($items as &$item){
             $item['client'] = ['name'=> $item['businessman_name']];
+            $item['uuid'] = $item['businessman_uuid'];
             unset($item['businessman_name']);
         }
         return $this->sendResponse($items, 'services');;

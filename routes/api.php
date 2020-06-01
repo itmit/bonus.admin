@@ -35,6 +35,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::resource('client', 'Api\ClientApiController');
     Route::post('client/update', 'Api\ClientApiController@update');
     Route::post('subscribeToBusinessman', 'Api\ClientApiController@subscribeToBusinessman');
+    Route::post('unsubscribeToBusinessman', 'Api\ClientApiController@unsubscribeToBusinessman');
     Route::get('getSubscriptuions', 'Api\ClientApiController@getSubscriptuions');
 
     Route::resource('businessmanstock', 'Api\BusinessmanStockApiController');

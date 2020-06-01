@@ -16,11 +16,34 @@ class CustomerWebController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        if ( empty($request->all()) ) {
+            return view('clients.clientList', [
+                'title' => 'Покупатели',
+                'clients' => Client::where('type', 'customer')->get()
+            ]);
+        }
+
+        $clients = Client::query();
+
+        if($request->input('filter_name')){
+            $clients = $clients->where('name', 'like', '%' . $request->input('filter_name') . '%');
+        }
+        if($request->input('filter_email')){
+            $clients = $clients->where('email', 'like', '%' . $request->input('filter_email') . '%');
+        }
+        if($request->input('filter_phone')){
+            $clients = $clients->where('phone', 'like', '%' . $request->input('filter_phone') . '%');
+        }
+
+        $clients = $clients->get();
+
+        $request->flash();
+
         return view('clients.clientList', [
             'title' => 'Покупатели',
-            'clients' => Client::where('type', 'customer')->get()
+            'clients' => $clients
         ]);
     }
 

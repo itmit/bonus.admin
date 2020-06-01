@@ -30,6 +30,21 @@ class PortfolioController extends ApiBaseController
     }
 
     /**
+     * Display the specified resource.
+     *
+     * @param  string  $uuid
+     * @return \Illuminate\Http\Response
+     */
+    public function show($uuid)
+    {
+        $portfolio = Portfolio::join('clients', 'client_id', '=', 'clients.id')
+        ->where('clients.uuid', $uuid)
+        ->get(['portfolios.uuid', 'file'])
+        ->toArray();
+        return $this->sendResponse($portfolio,'');
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
