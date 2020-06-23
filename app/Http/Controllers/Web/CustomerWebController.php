@@ -82,6 +82,38 @@ class CustomerWebController extends Controller
     }
 
     /**
+     * update resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function update($id, Request $request)
+    {
+        $user = Client::findOrFail($id);
+
+        $input = $request->all();
+
+        $userInput = [
+            'login' => $request->login,
+            'email' => $request->email,
+            'phone' => $request->phone
+        ];
+
+        $customerInfoinput = [
+            'city' => $request->city,
+            'sex' => $request->sex,
+            'birthday' => $request->birthday,
+            'car' => $request->car
+        ];
+
+
+        $user->fill($userInput)->save();
+        $userInfo = $user->getCustomerInfo()->fill($customerInfoinput)->save();
+
+        return redirect()->route('auth.customers.index');
+    }
+
+    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request

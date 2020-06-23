@@ -29,10 +29,24 @@ class CustomerStockApiController extends ApiBaseController
      */
     public function index()
     {
-        return $this->sendResponse(Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
-        ->select('stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
+        $res = Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+        ->select('stocks.id','stocks.uuid', 'service_items.name AS service_name', 'stocks.name AS name', 'stocks.description', 'stocks.photo', 'stocks.expires_at')
         ->get()
-        ->toArray(),'Список акций');
+        ->toArray();
+        $stocks = [];
+        foreach($res as $value) {
+            $stocks[$value['id']] = $value;
+            $stocks[$value['id']]['is_favorite'] = 0;
+            unset($stocks[$value['id']]['id']);
+        }
+
+        $favorites = ClientToStock::whereIn('stock_id', array_keys($stocks))->where('customer_id', auth('api')->user()->id)->get();
+
+        foreach($favorites as $value) {
+            $stocks[$value->stock_id]['is_favorite'] = 1;
+        }
+
+        return $this->sendResponse(array_values($stocks),'Список акций');
     }
 
     public function filterStock(Request $request)

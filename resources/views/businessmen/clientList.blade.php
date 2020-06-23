@@ -41,7 +41,7 @@
                 <tbody>
                 @foreach($clients as $item)
                     <tr>
-                        <td><a href="/customers/{{ $item->id }}">{{ $item->name }}</a></td>
+                        <td><a href="/businessmen/{{ $item->id }}">{{ $item->name }}</a></td>
                         <td>{{ $item->email }}</td>
                         <td>{{ $item->phone }}</td>
                         <td><button type="button" class="btn btn-danger delete-item" data-id="{{$item->id}}">Удалить</button></td>

@@ -18,9 +18,9 @@ class BusinessmanWebController extends Controller
     public function index(Request $request)
     {
         if ( empty($request->all()) ) {
-            return view('clients.clientList', [
+            return view('businessmen.clientList', [
                 'title' => 'Предприниматели',
-                'clients' => Client::where('type', 'businessman')->get()
+                'clients' => Client::where('type', 'businessman')->get(),
             ]);
         }
 
@@ -56,6 +56,67 @@ class BusinessmanWebController extends Controller
         return view('departments.departmentCreate', [
             'title' => 'Создать отдел исполнителя'
         ]);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $user = Client::findOrFail($id);
+        $userInfo = $user->getBusinessmenInfo();
+
+        if ($userInfo == null) {
+            $userInfo = new \stdClass();
+            $userInfo->photo = null;
+            $userInfo->city = null;
+            $userInfo->country = null;
+            $userInfo->sex = null;
+            $userInfo->birthday = null;
+            $userInfo->car = null;
+        }
+
+        return view('businessmen.client', ['user' => $user, 'userInfo' => $userInfo]);
+    }
+
+    /**
+     * update resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function update($id, Request $request)
+    {
+        $user = Client::findOrFail($id);
+
+        $input = $request->all();
+
+        $userInput = [
+            'login' => $request->login,
+            'email' => $request->email,
+            'phone' => $request->phone
+        ];
+
+        $customerInfoinput = [
+            'city' => $request->city,
+            'address' => $request->address,
+            'work_time' => $request->work_time,
+            'contact' => $request->contact,
+            'description' => $request->description,
+            'vk' => $request->vk,
+            'facebook' => $request->facebook,
+            'instagram' => $request->instagram,
+            'odnoklassniki' => $request->odnoklassniki
+        ];
+
+
+        $user->fill($userInput)->save();
+        $userInfo = $user->getBusinessmenInfo()->fill($customerInfoinput)->save();
+
+        return redirect()->route('auth.businessmen.index');
     }
 
     /**

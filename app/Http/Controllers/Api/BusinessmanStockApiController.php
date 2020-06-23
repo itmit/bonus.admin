@@ -100,7 +100,14 @@ class BusinessmanStockApiController extends ApiBaseController
      */
     public function show($uuid)
     {
+        $stock = Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+            ->where('stocks.uuid', $uuid)
+            ->select('stocks.*', 'service_items.name AS service_name')
+            ->first();
 
+        \App\Models\StockView::createViewLog($stock->id);
+
+        return $this->sendResponse($stock->toArray(), 'Акция');
     }
 
     /**

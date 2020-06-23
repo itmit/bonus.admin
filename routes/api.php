@@ -18,6 +18,7 @@ Route::post('login', 'Api\AuthApiController@login');
 Route::post('register', 'Api\AuthApiController@register');
 Route::post('logout', 'Api\AuthApiController@logout');
 Route::post('fillInfo', 'Api\AuthApiController@fillInfo');
+Route::post('authorizationAnExternalService', 'Api\AuthApiController@authorizationAnExternalService');
 
 Route::group(['middleware' => 'auth:api'], function(){
 
@@ -60,6 +61,12 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     Route::resource('dialogs', 'Api\DialogApiController');
     Route::post('sendMessage', 'Api\DialogApiController@sendMessage');
+
+    Route::get('statistics/getAgeStatistics', 'Api\StatisticsApiController@getAgeStatistics');
+    Route::get('statistics/getGeographyStatistics', 'Api\StatisticsApiController@getGeographyStatistics');
+    Route::get('statistics/getSalesStatistics', 'Api\StatisticsApiController@getSalesStatistics');
+    Route::get('statistics/getProfileViewsStatistics', 'Api\StatisticsApiController@getProfileViewsStatistics');
+    Route::get('statistics/getStockViewsStatistics', 'Api\StatisticsApiController@getStockViewsStatistics');
 });
 
 Route::post('businessmanstock/test', 'Api\BusinessmanStockApiController@test');

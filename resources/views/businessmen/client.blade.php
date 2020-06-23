@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="container emp-profile">
-    <form method="POST" action="{{route('auth.customers.update',['id' => $user->id])}}">
+    <form method="POST" action="{{route('auth.businessmen.update',['id' => $user->id])}}">
         {{ csrf_field() }}
         {{ method_field('PATCH') }}
         <div class="row">
@@ -84,26 +84,66 @@
                         </div>
                         <div class="row py-1">
                             <div class="col-md-6">
-                                <label>Пол</label>
+                                <label>Адрес</label>
                             </div>
                             <div class="col-md-6">
-                                <input class="form-control" type="text" placeholder="Пол" name="sex" value="{{ $userInfo->sex }}">
-                            </div>
-                        </div>
-                        <div class="row py-1">
-                            <div class="col-md-6">
-                                <label>Дата рождения</label>
-                            </div>
-                            <div class="col-md-6">
-                                <input class="form-control" type="text" placeholder="Дата рождения" name="birthday" value="{{ $userInfo->birthday }}">
+                                <input class="form-control" type="text" placeholder="Адрес" name="address" value="{{ $userInfo->address }}">
                             </div>
                         </div>
                         <div class="row py-1">
                             <div class="col-md-6">
-                                <label>Машина</label>
+                                <label>Время работы</label>
                             </div>
                             <div class="col-md-6">
-                                <input class="form-control" type="text" placeholder="Машина" name="car" value="{{ $userInfo->car }}">
+                                <input class="form-control" type="text" placeholder="Время работы" name="work_time" value="{{ $userInfo->work_time }}">
+                            </div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col-md-6">
+                                <label>Контакт</label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" placeholder="Контакт" name="contact" value="{{ $userInfo->contact }}">
+                            </div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col-md-6">
+                                <label>Описание</label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" placeholder="description" name="description" value="{{ $userInfo->description }}">
+                            </div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col-md-6">
+                                <label>Vk</label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" placeholder="vk" name="vk" value="{{ $userInfo->vk }}">
+                            </div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col-md-6">
+                                <label>Facebook</label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" placeholder="facebook" name="facebook" value="{{ $userInfo->facebook }}">
+                            </div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col-md-6">
+                                <label>Instagram</label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" placeholder="instagram" name="instagram" value="{{ $userInfo->instagram }}">
+                            </div>
+                        </div>
+                        <div class="row py-1">
+                            <div class="col-md-6">
+                                <label>Одноклассники</label>
+                            </div>
+                            <div class="col-md-6">
+                                <input class="form-control" type="text" placeholder="Одноклассники" name="odnoklassniki" value="{{ $userInfo->odnoklassniki }}">
                             </div>
                         </div>
                     </div>

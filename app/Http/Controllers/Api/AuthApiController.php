@@ -76,7 +76,6 @@ class AuthApiController extends ApiBaseController
      */
     public function login(Request $request)
     {
-
         $validator = Validator::make($request->all(), [
             'login' => 'required',
             'password' => 'required|min:6',
@@ -117,7 +116,14 @@ class AuthApiController extends ApiBaseController
         if (!$isInfoFilled) {
             return $this->sendResponse(['uuid' => $client->uuid, 'type' => $client->type], 'Данные о пользователе не заполнены', false);
         }
-
+        
+        if($request->device_token)
+        {
+            Client::where('id', '=', $client->id)->update([
+                'device_token' => $request->device_token
+            ]);
+        }
+        
         return self::auth($client, $request->password);
     }
 
@@ -137,7 +143,6 @@ class AuthApiController extends ApiBaseController
             'uuid' => 'required|uuid',
             'country' => 'required|string',
             'city' => 'required|string',
-            'car' => 'string',
             'address' => 'min:6',
             'worktime' => 'string',
             'phone' => 'string',
@@ -204,7 +209,6 @@ class AuthApiController extends ApiBaseController
                     Rule::in(['male', 'female']),
                 ],
                 'birthday' => 'required|date',
-                'car' => 'string',
                 'phone' => 'required|string|unique:clients',
                 'photo' => 'image|mimes:jpeg,jpg,png,gif|max:10000',
                 'password' => 'required|min:6'
@@ -257,6 +261,79 @@ class AuthApiController extends ApiBaseController
         }
 
         return self::auth(Client::where('uuid', $request->uuid)->first(), $request->password);
+    }
+
+    public function authorizationAnExternalService(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'access_token' => 'required|string',
+            'email' => 'required|email|max:191',
+            'service' => [
+                'required',
+                Rule::in(['vk', 'facebook']), // предприниматель, покупатель
+            ],
+            'device_token' => 'string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 401);
+        }
+        if ($request->service == "vk") {
+            $url = "https://api.vk.com/method/secure.checkToken?token=$request->access_token&v=5.37&client_secret=tidyZbYM2oE8zoijD4zV&access_token=dbfad886dbfad886dbfad886a2db8845e7ddbfadbfad886851dffc451280fb30fbe4186";
+        } else{
+            $url = "https://graph.facebook.com/me?access_token=$request->access_token";
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        
+        $result = json_decode($result);
+
+        $isSuccess = false;
+        if ($request->service == "vk")
+        {
+            $isSuccess = $result->response->success;
+        }else{
+            $isSuccess = property_exists($result, "id");
+        }
+        if ($isSuccess)
+            {
+                if($request->device_token)
+                {
+                    Client::where('email', $request->email)->update([
+                        'device_token' => $request->device_token
+                    ]);
+                }
+
+                $client = Client::where('email', $request->email)->first();
+                Auth::login($client);
+                if (Auth::check()) {
+                    $tokenResult = $client->createToken(config('app.name'));
+                    $token = $tokenResult->token;
+                    $token->expires_at = Carbon::now()->addWeeks(1);
+                    $token->save();
+
+                    if ($client->type == 'businessman') $clientInfo = ClientBusinessman::where('client_id', $client->id)->first();
+                    if ($client->type == 'customer') $clientInfo = ClientCustomer::where('client_id', $client->id)->first();
+
+                    return $this->sendResponse(
+                        [
+                            'client' => $client,
+                            'client_info' => $clientInfo,
+                            'access_token' => $tokenResult->accessToken,
+                            'token_type' => 'Bearer',
+                            'expires_at' => Carbon::parse(
+                                $tokenResult->token->expires_at
+                            )->toDateTimeString(),
+                        ],
+                        'Authorization is successful'
+                    );
+                }
+            }
     }
 
     private function auth($client, $password)

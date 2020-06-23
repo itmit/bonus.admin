@@ -66,6 +66,77 @@ class DialogApiController extends ApiBaseController
         return $this->sendResponse($dialogs->toArray(), 'Список диалогов пользователя');
     }
 
+
+    private function sendNotification($senderId, $dialog_id, $message)
+    {
+        $serverKey = 'AAAA9-20Vng:APA91bHLn3Efzgp1HQh92jLn5kIURWfdLy-s0kWEzyPaJuxGKrEbuvq8jAgt23zLDKCZxpTGSdnjgv7JqTg-7VEtEu_vjKiJl-9GatGVBTwg6KfqxKLdiNnhRaFcMPpdENdrE1UgjiN8';
+        $dialog = Dialog::find($dialog_id);
+
+        if ($senderId == $dialog->client_to){
+            $recipientId= $dialog->client_from;
+        }else{
+            $recipientId= $dialog->client_to;
+        }
+        $recipientToken = Client::where('id', $recipientId)->value("device_token");
+
+        $sender = Client::where('id', $senderId)->first();
+        if ($sender->type == "customer") {
+            $senderAvatar = ClientCustomer::where('client_id', $senderId)->value('photo');
+        } else {
+            $senderAvatar = ClientBusinessman::where('client_id', $senderId)->value('photo');
+        }
+
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $fields = array(
+            'to' => $recipientToken,
+            'data' => array(
+                "message" => $message,
+                "phone" => $sender->phone,
+                "avatar" => $senderAvatar,
+                "dialog_id" => $dialog_id,
+                "title" => $sender->name,
+                "updated_at" => $dialog->updated_at->format('Y-m-d H:i:s'),
+            ),
+            'notification' => array(
+                "title" => $sender->name,
+                "body" => $message,
+                "phone" => $sender->phone,
+                "avatar" => $senderAvatar,
+                "dialog_id" => $dialog_id,
+                "updated_at" => $dialog->updated_at->format('Y-m-d H:i:s'),
+            ),
+            "priority" => "high"
+        );
+        $headers = array(
+            'Authorization: key=' . $serverKey,
+            'Content-type: Application/json'
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        $result = json_decode($result);
+        
+        if ($result->failure > 0) {
+            \DB::table('notification_errors')->insert([
+                'error' => json_encode($result->results),
+                'fields' => json_encode($fields)
+            ]);
+        }
+
+        $result = ['error' => null, 'result' => "message sent"];
+
+        return $result;
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -195,8 +266,12 @@ class DialogApiController extends ApiBaseController
 
         $dialog = Dialog::find($request->dialog_id);
         $dialog->touch();
-
-        // $notidcationResult = $this->sendNotification($userId, $request->DialogId, $request->Text);
+        
+        try{
+            $this->sendNotification($userId, $request->dialog_id, $request->content);
+        }
+        catch (\Exception $th) {
+        }
 
         return $this->sendResponse($message->toArray(), 'Message created successfully.');
     }

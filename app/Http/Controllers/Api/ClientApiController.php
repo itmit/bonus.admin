@@ -79,12 +79,13 @@ class ClientApiController extends ApiBaseController
     {
         $client = Client::where('uuid', $uuid)->first();
         if ($client->type == 'businessman') {
+            \App\Models\ProfileView::createViewLog($client->id);
             $info = ClientBusinessman::where('client_id', $client->id)->first();
-            
         }
         if ($client->type == 'customer') {
             $info = ClientCustomer::where('client_id', $client->id)->first();
         }
+
         return $this->sendResponse([
             'client' => $client,
             'client_info' => $info
@@ -221,7 +222,7 @@ class ClientApiController extends ApiBaseController
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 400);
             }
-            Client::where('client_id', $client->id)->update([
+            Client::where('id', $client->id)->update([
                 'phone' => $request->phone,
             ]);
             ClientCustomer::where('client_id', $client->id)->update([
