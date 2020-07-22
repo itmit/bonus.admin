@@ -75,11 +75,11 @@ class ClientApiController extends ApiBaseController
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($uuid)
+    public function show($uuid, Request $request)
     {
         $client = Client::where('uuid', $uuid)->first();
         if ($client->type == 'businessman') {
-            \App\Models\ProfileView::createViewLog($client->id);
+            \App\Models\ProfileView::createViewLog($client->id, $request->stock_id, $request->service_item_id);
             $info = ClientBusinessman::where('client_id', $client->id)->first();
         }
         if ($client->type == 'customer') {

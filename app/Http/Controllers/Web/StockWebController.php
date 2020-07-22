@@ -18,9 +18,21 @@ class StockWebController extends Controller
      */
     public function index()
     {
+        $admin = Auth::user()->adm;
+
+        if ($admin != 1) {
+            $managerCity = Auth::user()->city;
+
+            $stocks = Stock::where('city', $managerCity)->get();
+        }
+        else {
+            $stocks = Stock::all();
+        }
+
+
         return view('stocks.stockList', [
             'title' => 'Акции',
-            'stocks' => Stock::all()
+            'stocks' => $stocks
         ]);
     }
 

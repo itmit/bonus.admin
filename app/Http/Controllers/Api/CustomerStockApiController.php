@@ -49,6 +49,36 @@ class CustomerStockApiController extends ApiBaseController
         return $this->sendResponse(array_values($stocks),'Список акций');
     }
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($uuid)
+    {
+        $stock = Stock::join('service_items', 'stocks.service_id', '=', 'service_items.id')
+            ->join('clients', 'stocks.client_id', 'clients.id')
+            ->where('stocks.uuid', $uuid)
+            ->select('stocks.*', 'service_items.name as service_name', 'clients.uuid as client_uuid', 'clients.name as client_name')
+            ->first()->toArray();
+
+        $stock['client']['name'] = $stock['client_name'];
+        $stock['client']['uuid'] = $stock['client_uuid'];
+        unset($stock['client_name']);
+        unset($stock['client_uuid']);
+
+        $fav = ClientToStock::where('stock_id', $stock["id"])->where('customer_id', auth('api')->user()->id)->get();
+        if ($fav) {
+            $stock['is_favorite'] = true;
+        }else{
+            $stock['is_favorite'] = false;
+        }
+        \App\Models\StockView::createViewLog($stock["id"]);
+
+        return $this->sendResponse($stock, 'Акция');
+    }
+
     public function filterStock(Request $request)
     {
         if($request->uuid != null) $service = ServiceItem::where('uuid', $request->uuid)->first()->id;

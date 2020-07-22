@@ -3,19 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Collection;
 use App\Models\Client;
 use App\Models\ClientToBusinessman;
 use App\Models\CustomerService;
-use App\Models\ServiceType;
 use App\Models\BusinessmanService;
 use App\Models\ProfileView;
 use App\Models\Stock;
 use App\Models\StockView;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
 
 class StatisticsApiController extends ApiBaseController
@@ -231,6 +228,91 @@ class StatisticsApiController extends ApiBaseController
         }
 
         return $this->sendResponse($resultArray, 'Sales statistics created');
+    }
+
+    public function getTransitionsProfileStatistics(Request $request)
+    {
+        $validator = Validator::make($request->all(), [ 
+            'date_from' => 'required|date',
+            'date_to' => 'required|date',
+            'stock_ids' => 'required|json'
+        ]);
+
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 400);            
+        }
+
+        $resultArray = array();
+
+        $stocks = json_decode($request->stock_ids);
+        $fromDate = date_create($request->date_from);
+        $tillDate = date_create($request->date_to);
+        
+        // Create views object
+        $viewsByDate = ProfileView::select('id', 'created_at')
+            ->where('profile_id', auth('api')->user()->id)
+            ->whereBetween('created_at', [$fromDate, $tillDate])
+            ->where('stock_id', '<>', null)
+            ->where('stock_id', '<>', 0)
+            ->get()
+            ->groupBy(function($item){ return $item->created_at->format('d.m'); })
+            ->map(function ($group) {
+                return count($group);
+            })
+            ->sortKeys();
+
+        array_push($resultArray, $this->getStatisticLine("Акции", $viewsByDate));
+
+        // Create views object
+        $viewsByDate = ProfileView::select('id', 'created_at')
+            ->where('profile_id', auth('api')->user()->id)
+            ->whereBetween('created_at', [$fromDate, $tillDate])
+            ->where('service_item_id', '<>', null)
+            ->where('service_item_id', '<>', 0)
+            ->get()
+            ->groupBy(function($item){ return $item->created_at->format('d.m'); })
+            ->map(function ($group) {
+                return count($group);
+            })
+            ->sortKeys();
+
+        array_push($resultArray, $this->getStatisticLine("Услуги", $viewsByDate));
+
+        foreach($stocks as $val) {
+            // Create views object
+            $viewsByDate = ProfileView::select('id', 'created_at')
+                ->where('profile_id', auth('api')->user()->id)
+                ->whereBetween('created_at', [$fromDate, $tillDate])
+                ->where('stock_id', $val)
+                ->get()
+                ->groupBy(function($item){ return $item->created_at->format('d.m'); })
+                ->map(function ($group) {
+                    return count($group);
+                })
+                ->sortKeys();
+
+            array_push($resultArray, $this->getStatisticLine(Stock::select('name')->where('id', $val)->first()->name, $viewsByDate));
+        }
+
+        return $this->sendResponse($resultArray, 'Sales statistics created');
+    }
+
+    private function getStatisticLine(string $name, Collection $viewsByDate)
+    {
+        $viewsTypeObj = new \stdClass();
+        $viewsTypeObj->name = $name;
+
+        $viewsStatByDate = array();
+
+        foreach ($viewsByDate as $key => $value) {
+            $viewsObj = new \stdClass();
+            $viewsObj->count = $value;
+            $viewsObj->date = $key;
+
+            array_push($viewsStatByDate, $viewsObj);
+        }
+        $viewsTypeObj->views = $viewsStatByDate;
+        return $viewsTypeObj;
     }
 
     public function getProfileViewsStatistics(Request $request)

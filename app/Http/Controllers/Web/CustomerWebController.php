@@ -18,14 +18,34 @@ class CustomerWebController extends Controller
      */
     public function index(Request $request)
     {
+        $admin = Auth::user()->adm;
+
         if ( empty($request->all()) ) {
+            if ($admin != 1) {
+                $managerCity = Auth::user()->city;
+
+                $clients = Client::join('client_customers', 'clients.id', '=', 'client_customers.client_id')
+                    ->where('type', 'customer')
+                    ->where('client_customers.city', $managerCity)
+                    ->get();
+            }
+            else {
+                $clients = Client::where('type', 'customer')->get();
+            }
+
             return view('clients.clientList', [
                 'title' => 'Покупатели',
-                'clients' => Client::where('type', 'customer')->get()
+                'clients' => $clients
             ]);
         }
 
         $clients = Client::query();
+
+        if ($admin != 1) {
+            $managerCity = Auth::user()->city;
+            $clients->join('client_customers', 'clients.id', '=', 'client_customers.client_id');
+            $clients->where('client_customers.city', $managerCity);
+        }
 
         if($request->input('filter_name')){
             $clients = $clients->where('name', 'like', '%' . $request->input('filter_name') . '%');

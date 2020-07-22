@@ -44,7 +44,7 @@ class ServiceApiController extends ApiBaseController
 
     public function getAllServices()
     {
-        $items = BusinessmanService::select('businessman_services.uuid', 'accrual_method', 'writeoff_method', 'accrual_value', 'writeoff_value', 'service_items.name', 'businessmen_id as client_id')
+        $items = BusinessmanService::select('businessman_services.uuid', 'accrual_method', 'service_items.id', 'writeoff_method', 'accrual_value', 'writeoff_value', 'service_items.name', 'businessmen_id as client_id')
             ->join('service_items', 'businessman_services.service_item_id', '=', 'service_items.id')->get()->toArray();
 
         $users = [];

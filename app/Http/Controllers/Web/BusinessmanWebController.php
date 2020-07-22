@@ -17,14 +17,34 @@ class BusinessmanWebController extends Controller
      */
     public function index(Request $request)
     {
+        $admin = Auth::user()->adm;
+        
         if ( empty($request->all()) ) {
+            if ($admin != 1) {
+                $managerCity = Auth::user()->city;
+
+                $clients = Client::join('client_businessmen', 'clients.id', '=', 'client_businessmen.client_id')
+                    ->where('type', 'businessman')
+                    ->where('client_businessmen.city', $managerCity)
+                    ->get();
+            }
+            else {
+                $clients = Client::where('type', 'businessman')->get();
+            }
+
             return view('businessmen.clientList', [
                 'title' => 'Предприниматели',
-                'clients' => Client::where('type', 'businessman')->get(),
+                'clients' => $clients
             ]);
         }
 
         $clients = Client::query();
+
+        if ($admin != 1) {
+            $managerCity = Auth::user()->city;
+            $clients->join('client_businessmen', 'clients.id', '=', 'client_businessmen.client_id');
+            $clients->where('client_businessmen.city', $managerCity);
+        }
 
         if($request->input('filter_name')){
             $clients = $clients->where('name', 'like', '%' . $request->input('filter_name') . '%');

@@ -18,9 +18,21 @@ class ArchiveWebController extends Controller
      */
     public function index()
     {
+        $admin = Auth::user()->adm;
+
+        if ($admin != 1) {
+            $managerCity = Auth::user()->city;
+
+            $stocks = StockArchive::where('city', $managerCity)->get();
+        }
+        else {
+            $stocks = StockArchive::all();
+        }
+
+
         return view('archives.archivesList', [
             'title' => 'Список акций в архиве',
-            'stocks' => StockArchive::all()
+            'stocks' => $stocks
         ]);
     }
 

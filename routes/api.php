@@ -20,6 +20,9 @@ Route::post('logout', 'Api\AuthApiController@logout');
 Route::post('fillInfo', 'Api\AuthApiController@fillInfo');
 Route::post('authorizationAnExternalService', 'Api\AuthApiController@authorizationAnExternalService');
 
+Route::post('sendCode', 'Api\AuthApiController@sendCode');
+Route::post('resetPassword', 'Api\AuthApiController@resetPassword');
+
 Route::group(['middleware' => 'auth:api'], function(){
 
     Route::resource('service', 'Api\ServiceApiController');
@@ -67,6 +70,17 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::get('statistics/getSalesStatistics', 'Api\StatisticsApiController@getSalesStatistics');
     Route::get('statistics/getProfileViewsStatistics', 'Api\StatisticsApiController@getProfileViewsStatistics');
     Route::get('statistics/getStockViewsStatistics', 'Api\StatisticsApiController@getStockViewsStatistics');
+    Route::get('statistics/getTransitionsProfileStatistics', 'Api\StatisticsApiController@getTransitionsProfileStatistics');
+
+    Route::resource('rates', 'Api\RatesApiController')->only([
+        'index', 'store'
+    ]);
+    Route::get('rates/getMyRate', 'Api\RatesApiController@getMyRate');
+    Route::post('rates/payRate', 'Api\RatesApiController@payRate');
+
+    Route::resource('manager', 'Api\ManagerApiController');
 });
 
+Route::get('rates/success', 'Api\RatesApiController@paymentSuccess');
+Route::get('rates/error', 'Api\RatesApiController@paymentError');
 Route::post('businessmanstock/test', 'Api\BusinessmanStockApiController@test');

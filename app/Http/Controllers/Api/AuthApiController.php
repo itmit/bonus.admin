@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Client;
 use App\Models\ClientBusinessman;
 use App\Models\ClientCustomer;
+use App\Models\BusinessmanManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -111,6 +112,9 @@ class AuthApiController extends ApiBaseController
         }
         if ($client->type == 'customer') {
             $isInfoFilled = ClientCustomer::where('client_id', '=', $client->id)->exists();
+        }
+        if ($client->type == 'manager') {
+            $isInfoFilled = true;
         }
 
         if (!$isInfoFilled) {
@@ -348,6 +352,7 @@ class AuthApiController extends ApiBaseController
 
                 if ($client->type == 'businessman') $clientInfo = ClientBusinessman::where('client_id', $client->id)->first();
                 if ($client->type == 'customer') $clientInfo = ClientCustomer::where('client_id', $client->id)->first();
+                if ($client->type == 'manager') $clientInfo = BusinessmanManager::where('client_id', $client->id)->first();
 
                 return $this->sendResponse(
                     [
@@ -365,5 +370,55 @@ class AuthApiController extends ApiBaseController
         } else {
             return response()->json(['error' => 'Неверный пароль'], 401);
         }
+    }
+
+    public function sendCode(Request $request)
+    {
+        $validator = Validator::make($request->all(), [ 
+            'email' => 'required|email|exists:clients',
+        ]);
+        
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 401);            
+        }
+
+        $code = random_int(1000, 9999);
+        $message = "Ваш код для сброса пароля: " . $code;
+
+        Client::where('email', $request->email)->update([
+            'code' => $code
+        ]);
+
+        // На случай если какая-то строка письма длиннее 70 символов мы используем wordwrap()
+        $message = wordwrap($message, 70, "\r\n");
+
+        // Отправляем
+        mail($request->email, 'Приложение БОНУС. Сброс пароля', $message);
+    }
+    
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [ 
+            'email' => 'required|email|exists:clients',
+            'code' => 'required',
+            'password' => 'required|confirmed'
+        ]);
+        
+        if ($validator->fails()) { 
+            return response()->json(['errors'=>$validator->errors()], 401);            
+        }
+
+        $client = Client::where('email', $request->email)->first();
+
+        if($request->code == $client->code)
+        {
+            $client->update([
+                'password' => Hash::make($request->password),
+                'code' => null
+            ]);
+        }
+        else return response()->json(['error'=>'Wrong code'], 400);     
+
+        return $this->sendResponse([], 'Пароль успешно сменен');
     }
 }

@@ -89,8 +89,6 @@
                     $admin = Auth::user()->adm;    
                     ?>
 
-                    @if($admin == 1)
-
                     <li name="customers"><a href="{{ route('auth.customers.index') }}">Покупатели</a></li>
 
                     <li name="businessmen"><a href="{{ route('auth.businessmen.index') }}">Предприниматели</a></li>
@@ -99,11 +97,15 @@
 
                     <li name="archives"><a href="{{ route('auth.archives.index') }}">Архив акций</a></li>
 
+                    @if($admin == 1)
+
                     <li name="news"><a href="{{ route('auth.news.index') }}">Новости</a></li>
 
                     <li name="services"><a href="{{ route('auth.services.index') }}">Услуги</a></li>
 
                     <li name="serviceTypes"><a href="{{ route('auth.serviceTypes.index') }}">Виды услуг</a></li>
+
+                    <li name="managers"><a href="{{ route('auth.managers.index') }}">Менеджеры</a></li>
 
                     @endif
 
